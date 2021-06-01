@@ -154,7 +154,6 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
     # model's performance on the train data
     if model_name == 'nn':
         pred_train = blackbox.predict((Variable(torch.tensor(X_train).float())))
-        # proba_train = blackbox.predict_proba((Variable(torch.tensor(X_train).float())))
     else:
         pred_train = blackbox.predict(X_train)
 
