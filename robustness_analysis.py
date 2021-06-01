@@ -20,6 +20,8 @@ from sklearn.svm import SVC
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
+import torch
+from torch.autograd import Variable
 from progress_bar import printProgressBar
 import sys
 sys.path.insert(0, "CARE")
@@ -67,10 +69,16 @@ def main():
             # creating the black-box model
             blackbox, \
             train_performance, \
-            test_performance = ModelConstruction(dataset, X_train, X_test, Y_train, Y_test,
-                                                 blackbox_name, blackbox_constructor)
-            predict_fn = lambda x: blackbox.predict(x).ravel()
-            predict_proba_fn = lambda x: blackbox.predict_proba(x)
+            test_performance = ModelConstruction( X_train, X_test, Y_train, Y_test, blackbox_name, blackbox_constructor)
+            if blackbox_name == 'nn':
+                predict_fn = lambda x: blackbox.predict((Variable(torch.tensor(x).float()))).ravel()
+                predict_proba_fn = lambda x: blackbox.predict_proba((Variable(torch.tensor(x).float())))
+            else:
+                predict_fn = lambda x: blackbox.predict(x).ravel()
+                predict_proba_fn = lambda x: blackbox.predict_proba(x)
+
+
+            print('')
 
 
 
