@@ -29,6 +29,8 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
     # constructing the black-box model
     if model_name == 'nn':
         class DNN(nn.Module):
+
+            # model's architecture
             def __init__(self, n_inputs):
                 super(DNN, self).__init__()
                 # input to first hidden layer
@@ -44,8 +46,8 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
                 xavier_uniform_(self.hidden3.weight)
                 self.act3 = Sigmoid()
 
-                # forward propagate input
 
+            # forward propagate input
             def forward(self, X):
                 # input to first hidden layer
                 X = self.hidden1(X)
@@ -58,25 +60,7 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
                 X = self.act3(X)
                 return X
 
-            # def __init__(self, D_in, H, D_out):
-            #     super(DNN, self).__init__()
-            #     self.linear1 = torch.nn.Linear(D_in, H)
-            #     self.linear2 = torch.nn.Linear(H, H)
-            #     self.linear3 = torch.nn.Linear(H, H)
-            #     self.linear4 = torch.nn.Linear(H, D_out)
-            #     self.relu = torch.nn.ReLU()
-            #     self.softmax = torch.nn.Softmax(dim=0)
-            #
-            # def forward(self, x):
-            #     h1 = self.relu(self.linear1(x))
-            #     h2 = self.relu(self.linear2(h1))
-            #     h3 = self.relu(self.linear3(h2))
-            #     a3 = self.linear4(h3)
-            #     y = self.softmax(a3)
-            #     return y
-
-
-
+            # predict label
             def predict(self, x):
                 with torch.no_grad():
                     output = self.forward(x)
@@ -84,12 +68,14 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
                     label = label.cpu().detach().numpy()
                     return label
 
+            # predict proba
             def predict_proba(self, x):
                 with torch.no_grad():
                     output = self.forward(x)
                     proba = output.cpu().numpy()
                     return proba
 
+        # training the model
         def train(model, criterion, optimizer, X, y, N, n_classes):
             model.train()
             current_loss = 0
@@ -101,8 +87,7 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
                 inputs = Variable(inputs, requires_grad=True)
                 optimizer.zero_grad()
                 output = model(inputs)
-                _, indices = torch.max(output, 1)  # argmax of output [[0.61, 0.12]] -> [0]
-                # [[0, 1, 1, 0, 1, 0, 0]] -> [[1, 0], [0, 1], [0, 1], [1, 0], [0, 1], [1, 0], [1, 0]]
+                _, indices = torch.max(output, 1)
                 preds = torch.tensor(keras.utils.to_categorical(indices, num_classes=n_classes))
                 loss = criterion(output, labels)
                 loss.backward()
@@ -113,24 +98,24 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
             current_correct = current_correct.double() / X.size(0)
             return preds, current_loss, current_correct.item()
 
+        # data preparation
         n_classes = len(np.unique(Y_train))
         x_train = torch.FloatTensor(X_train)
         y_train = keras.utils.to_categorical(Y_train, n_classes)
         y_train = torch.FloatTensor(y_train)
 
-        D_in = x_train.size(1)
-        D_out = y_train.size(1)
+        # training hyper-parameteres
         epochs = 100
         batch_size = 100
-        H = 50
         blackbox = DNN(X_train.shape[1])
         lr = 1e-4
 
+        # training the model
         criterion = torch.nn.BCELoss()
         optimizer = torch.optim.Adam(blackbox.parameters(), lr=lr)
         for epoch in range(epochs):
             preds, epoch_loss, epoch_acc = train(blackbox, criterion, optimizer, x_train, y_train, batch_size, n_classes)
-            print("> epoch {:.0f}\tLoss {:.5f}\tAcc {:.5f}".format(epoch, epoch_loss, epoch_acc))
+            # print("> epoch {:.0f}\tLoss {:.5f}\tAcc {:.5f}".format(epoch, epoch_loss, epoch_acc))
 
     elif model_name=='rf' or model_name=='gb':
         # constructing the black-box model
