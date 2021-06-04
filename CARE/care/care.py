@@ -3,6 +3,7 @@ import pandas as pd
 from math import *
 from deap import algorithms, base, creator, tools
 from utils import *
+from care.label_obj import labelObj
 from care.outcome_obj import outcomeObj
 from care.distance_obj import distanceObj
 from care.sparsity_obj import sparsityObj
@@ -42,8 +43,8 @@ class CARE():
                  x_init=0.3,
                  neighbor_init=0.6,
                  random_init=1.0,
-                 crossover_perc=0.6,
-                 mutation_perc=0.3,
+                 crossover_perc=0.8,
+                 mutation_perc=0.5,
                  division_factor=6,
                  ):
 
@@ -76,15 +77,50 @@ class CARE():
 
     def constructObjectiveFunction(self):
 
-        print('Constructing objective function according to SOUNDNESS, COHERENCY, and ACTIONABILITY hyper-parameters ...')
+        # print('Constructing objective function according to SOUNDNESS, COHERENCY, and ACTIONABILITY hyper-parameters ...')
+
+        # if self.SOUNDNESS == False and self.COHERENCY == False and self.ACTIONABILITY == False:
+        #     # objective names
+        #     self.objective_names = ['outcome', 'distance', 'sparsity']
+        #     # objective weights, -1.0: cost function, 1.0: fitness function
+        #     self.objective_weights = (-1.0, -1.0, -1.0)
+        #     # number of objectives
+        #     self.n_objectives = 3
+        #
+        #     # defining objective function
+        #     def objectiveFunction(x_ord, x_org, task, cf_class, cf_range, probability_thresh, proximity_model,
+        #                           connectedness_model, user_preferences, dataset, predict_fn, predict_proba_fn,
+        #                           feature_width, continuous_indices, discrete_indices, featureScaler,
+        #                           correlationModel, cf_theta):
+        #
+        #         # constructing counterfactual from the EA decision variables
+        #         cf_theta = np.asarray(cf_theta)
+        #         cf_org = theta2org(cf_theta, featureScaler, dataset)
+        #         cf_ord = org2ord(cf_org, dataset)
+        #         cf_ohe = ord2ohe(cf_ord, dataset)
+        #
+        #         # objective 1: desired outcome
+        #         outcome_cost = outcomeObj(cf_ohe, task, predict_fn, predict_proba_fn,
+        #                                      probability_thresh, cf_class, cf_range)
+        #         # objective 2: feature distance
+        #         distance_cost = distanceObj(x_ord, cf_ord, feature_width, continuous_indices, discrete_indices)
+        #
+        #         # objective 3: sparsity
+        #         sparsity_cost = sparsityObj(x_org, cf_org)
+        #
+        #         return outcome_cost, distance_cost, sparsity_cost
+        #
+        #     return objectiveFunction
+
+
 
         if self.SOUNDNESS == False and self.COHERENCY == False and self.ACTIONABILITY == False:
             # objective names
-            self.objective_names = ['outcome', 'distance', 'sparsity']
+            self.objective_names = ['label', 'distance']
             # objective weights, -1.0: cost function, 1.0: fitness function
-            self.objective_weights = (-1.0, -1.0, -1.0)
+            self.objective_weights = (-1.0, -1.0)
             # number of objectives
-            self.n_objectives = 3
+            self.n_objectives = 2
 
             # defining objective function
             def objectiveFunction(x_ord, x_org, task, cf_class, cf_range, probability_thresh, proximity_model,
@@ -98,16 +134,13 @@ class CARE():
                 cf_ord = org2ord(cf_org, dataset)
                 cf_ohe = ord2ohe(cf_ord, dataset)
 
-                # objective 1: desired outcome
-                outcome_cost = outcomeObj(cf_ohe, task, predict_fn, predict_proba_fn,
-                                             probability_thresh, cf_class, cf_range)
+                # objective 1: desired label
+                label_cost = labelObj(cf_ohe, predict_fn, cf_class)
+
                 # objective 2: feature distance
                 distance_cost = distanceObj(x_ord, cf_ord, feature_width, continuous_indices, discrete_indices)
 
-                # objective 3: sparsity
-                sparsity_cost = sparsityObj(x_org, cf_org)
-
-                return outcome_cost, distance_cost, sparsity_cost
+                return label_cost, distance_cost
 
             return objectiveFunction
 
@@ -404,7 +437,7 @@ class CARE():
 
     def groundtruthData(self):
 
-        print('Identifying correctly predicted training data for each class/quantile ...')
+        # print('Identifying correctly predicted training data for each class/quantile ...')
 
         # dict to save ground-truth data
         groundtruth_data = {}
@@ -460,7 +493,7 @@ class CARE():
 
     def proximityModel(self):
 
-        print('Creating Local Outlier Factor (LOF) models for measuring proximity ...')
+        # print('Creating Local Outlier Factor (LOF) models for measuring proximity ...')
 
         # creating Local Outlier Factor models for modeling proximity
         lof_models = {}
@@ -474,7 +507,7 @@ class CARE():
 
     def connectednessModel(self):
 
-        print('Creating HDBSCAN clustering models for measuring connectedness ...')
+        # print('Creating HDBSCAN clustering models for measuring connectedness ...')
 
         # creating HDBSCAN models for modeling connectedness
         hdbscan_models = {}
@@ -487,7 +520,7 @@ class CARE():
 
     def correlationModel(self):
 
-        print('Creating correlation models for coherency-preservation ...')
+        # print('Creating correlation models for coherency-preservation ...')
 
         ## Feature correlation modeling
         # Calculate the correlation/strength-of-association of features in data-set
@@ -539,7 +572,7 @@ class CARE():
 
     def neighborhoodModel(self):
 
-        print('Creating neighborhood models for every class/quantile of correctly predicted training data ...')
+        # print('Creating neighborhood models for every class/quantile of correctly predicted training data ...')
 
         neighborhood_models = {}
         for key, data in self.groundtruthData.items():
@@ -552,7 +585,7 @@ class CARE():
 
     def fit(self, X_train, Y_train):
 
-        print('Fitting the framework on the training data ...')
+        # print('Fitting the framework on the training data ...')
 
         self.X_train = X_train
         self.Y_train = Y_train
@@ -568,7 +601,7 @@ class CARE():
     def setupToolbox(self, x_ord, x_org, x_theta, cf_class, cf_range, probability_thresh, user_preferences,
                      neighbor_theta, proximity_model, connectedness_model):
 
-        print('Creating toolbox for the optimization algorithm ...')
+        # print('Creating toolbox for the optimization algorithm ...')
 
         # initialization function
         def initialization(x_theta, neighbor_theta, n_features, init_probability):
@@ -594,15 +627,16 @@ class CARE():
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
         toolbox.register("mate", tools.cxTwoPoint)
         toolbox.register("mutate", tools.mutPolynomialBounded, low=0, up=1, eta=20.0, indpb=1.0 / self.n_features)
-        ref_points = tools.uniform_reference_points(len(self.objective_weights), self.division_factor)
-        toolbox.register("select", tools.selNSGA3, ref_points=ref_points)
+        # ref_points = tools.uniform_reference_points(len(self.objective_weights), self.division_factor)
+        # toolbox.register("select", tools.selNSGA3, ref_points=ref_points)
+        toolbox.register("select", tools.selAutomaticEpsilonLexicase)
 
         return toolbox
 
     # executing the optimization algorithm
     def runEA(self):
 
-        print('Running NSGA-III optimization algorithm ...')
+        # print('Running NSGA-III optimization algorithm ...')
 
         # Initialize statistics object
         stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -625,7 +659,7 @@ class CARE():
         # Compile statistics about the population
         record = stats.compile(pop)
         logbook.record(pop=pop, gen=0, evals=len(invalid_ind), **record)
-        print(logbook.stream)
+        # print(logbook.stream)
 
         # Begin the generational process
         for gen in range(1, self.n_generation):
@@ -644,7 +678,7 @@ class CARE():
             hof.update(pop)
             record = stats.compile(pop)
             logbook.record(pop=pop, gen=gen, evals=len(invalid_ind), **record)
-            print(logbook.stream)
+            # print(logbook.stream)
 
         fronts = tools.emo.sortLogNondominated(pop, self.n_population)
 
@@ -659,7 +693,7 @@ class CARE():
                 user_preferences=None
                 ):
 
-        print('Generating counterfactual explanations ...')
+        # print('Generating counterfactual explanations ...')
 
         x_ord = x
         x_ohe = ord2ohe(x, self.dataset)
