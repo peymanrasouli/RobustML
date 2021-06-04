@@ -800,7 +800,7 @@ def PrepareCircles(dataset_path, dataset_name):
     df_X_org = df_X_org.round(precision)
 
     ## Scaling continuous features
-    num_feature_scaler =StandardScaler()
+    num_feature_scaler =MinMaxScaler()
     scaled_data = num_feature_scaler.fit_transform(df_X_org.iloc[:, continuous_indices].to_numpy())
     scaled_data = pd.DataFrame(data=scaled_data, columns=continuous_features)
 
@@ -937,7 +937,7 @@ def PrepareLinearlySeparable(dataset_path, dataset_name):
     df_X_org = df_X_org.round(precision)
 
     ## Scaling continuous features
-    num_feature_scaler =StandardScaler()
+    num_feature_scaler =MinMaxScaler()
     scaled_data = num_feature_scaler.fit_transform(df_X_org.iloc[:, continuous_indices].to_numpy())
     scaled_data = pd.DataFrame(data=scaled_data, columns=continuous_features)
 
