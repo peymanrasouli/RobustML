@@ -1,6 +1,8 @@
 import pandas as pd
+pd.set_option('max_columns', None)
+pd.set_option('display.width', 1000)
 import numpy as np
-from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder, LabelEncoder, StandardScaler
+from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder, LabelEncoder, StandardScaler, MinMaxScaler
 from sklearn.datasets import make_classification, make_circles
 
 ## Preparing Adult dataset
@@ -11,34 +13,31 @@ def PrepareAdult(dataset_path, dataset_name):
 
     ## Handling missing values
     df = df.dropna().reset_index(drop=True)
-
-    # ## Reducing data
-    # np.random.seed(42)
-    # ind = np.random.choice(range(df.shape[0]), size=4000, replace=False)
-    # df = df.iloc[ind,:]
+    cat_to_num = {
+                  "sex": {" Male": 0,
+                          " Female": 1}
+                 }
+    df = df.replace(cat_to_num)
 
     ## Recognizing inputs
     class_name = 'class'
     df_X_org = df.loc[:, df.columns!=class_name]
     df_y = df.loc[:, class_name]
 
-    continuous_features = ['age', 'fnlwgt', 'capital-gain', 'capital-loss', 'hours-per-week']
-    discrete_features = ['work-class', 'education-num', 'education', 'marital-status', 'occupation', 'relationship',
-                         'race', 'sex', 'native-country']
+    continuous_features = ['age', 'fnlwgt', 'education-num', 'sex', 'capital-gain', 'capital-loss', 'hours-per-week']
+    discrete_features = []
 
     continuous_availability = True
-    discrete_availability = True
+    discrete_availability = False
 
-    df_X_org = pd.concat([df_X_org[continuous_features], df_X_org[discrete_features]], axis=1)
+    df_X_org = df_X_org[continuous_features]
 
     continuous_indices = [df_X_org.columns.get_loc(f) for f in continuous_features]
-    discrete_indices = [df_X_org.columns.get_loc(f) for f in discrete_features]
+    discrete_indices = []
 
     feature_values = []
     for c in continuous_features:
-        feature_values.append({c:[min(df_X_org[c]),max(df_X_org[c])]})
-    for d in discrete_features:
-        feature_values.append({d: set(df_X_org[d].unique())})
+        feature_values.append({c: [min(df_X_org[c]), max(df_X_org[c])]})
 
     ## Extracting the precision of continuous features
     types = df_X_org[continuous_features].dtypes
@@ -57,24 +56,20 @@ def PrepareAdult(dataset_path, dataset_name):
     df_X_org = df_X_org.round(precision)
 
     ## Scaling continuous features
-    num_feature_scaler =StandardScaler()
+    num_feature_scaler = MinMaxScaler()
     scaled_data = num_feature_scaler.fit_transform(df_X_org.iloc[:, continuous_indices].to_numpy())
     scaled_data = pd.DataFrame(data=scaled_data, columns=continuous_features)
 
     ## Encoding discrete features
     # Ordinal feature transformation
-    ord_feature_encoder = OrdinalEncoder()
-    ord_encoded_data = ord_feature_encoder.fit_transform(df_X_org.iloc[:, discrete_indices].to_numpy())
-    ord_encoded_data = pd.DataFrame(data=ord_encoded_data, columns=discrete_features)
+    ord_feature_encoder = None
 
     # One-hot feature transformation
-    ohe_feature_encoder = OneHotEncoder(sparse=False)
-    ohe_encoded_data = ohe_feature_encoder.fit_transform(ord_encoded_data.to_numpy())
-    ohe_encoded_data = pd.DataFrame(data=ohe_encoded_data)
+    ohe_feature_encoder = None
 
     # Creating ordinal and one-hot data frames
-    df_X_ord = pd.concat([scaled_data, ord_encoded_data], axis=1)
-    df_X_ohe = pd.concat([scaled_data, ohe_encoded_data], axis=1)
+    df_X_ord = scaled_data.copy(deep=True)
+    df_X_ohe = scaled_data.copy(deep=True)
 
     ## Encoding labels
     df_y_le = df_y.copy(deep=True)
@@ -98,21 +93,16 @@ def PrepareAdult(dataset_path, dataset_name):
     feature_ranges = {feature_names[i]: [min(X_ord[:, i]), max(X_ord[:, i])] for i in range(X_ord.shape[1])}
     feature_width = np.max(X_ord, axis=0) - np.min(X_ord, axis=0)
 
-    # Extracting ohe feature names
-    feature_name_encoder = OneHotEncoder(sparse=False)
-    feature_name_encoder.fit(df_X_org.iloc[:, discrete_indices])
-    ohe_feature_names = continuous_features + list(feature_name_encoder.get_feature_names(discrete_features))
-
-    n_cat_discrete = ord_encoded_data.nunique().to_list()
+    n_cat_discrete = []
 
     len_continuous_org = [0, df_X_org.iloc[:, continuous_indices].shape[1]]
-    len_discrete_org = [df_X_org.iloc[:, continuous_indices].shape[1], df_X_org.shape[1]]
+    len_discrete_org = []
 
     len_continuous_ord = [0, scaled_data.shape[1]]
-    len_discrete_ord = [scaled_data.shape[1], df_X_ord.shape[1]]
+    len_discrete_ord = []
 
     len_continuous_ohe = [0, scaled_data.shape[1]]
-    len_discrete_ohe = [scaled_data.shape[1], df_X_ohe.shape[1]]
+    len_discrete_ohe = []
 
     ## Returning dataset information
     dataset = {
@@ -130,7 +120,6 @@ def PrepareAdult(dataset_path, dataset_name):
         'ohe_feature_encoder': ohe_feature_encoder,
         'num_feature_scaler': num_feature_scaler,
         'feature_names': feature_names,
-        'ohe_feature_names': ohe_feature_names,
         'feature_values': feature_values,
         'feature_indices': feature_indices,
         'feature_ranges': feature_ranges,
@@ -162,34 +151,29 @@ def PrepareCreditCardDefault(dataset_path, dataset_name):
 
     ## Reading data from a csv file
     df = pd.read_csv(dataset_path+dataset_name, delimiter=',')
-
-    # ## Reducing data
-    # np.random.seed(42)
-    # ind = np.random.choice(range(df.shape[0]), size=4000, replace=False)
-    # df = df.iloc[ind, :]
+    df.rename(columns={ 'default payment next month': 'class'}, inplace=True)
 
     ## Recognizing inputs
-    class_name = 'default payment next month'
+    class_name = 'class'
     df_X_org = df.loc[:, df.columns!=class_name]
     df_y = df.loc[:, class_name]
 
-    continuous_features = ['LIMIT_BAL', 'AGE',  'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5',
+    continuous_features = ['LIMIT_BAL', 'SEX', 'EDUCATION','MARRIAGE', 'AGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4',
+                           'PAY_5', 'PAY_6'  'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5',
                            'BILL_AMT6', 'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6']
-    discrete_features = ['SEX', 'EDUCATION', 'MARRIAGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6']
+    discrete_features = []
 
     continuous_availability = True
-    discrete_availability = True
+    discrete_availability = False
 
-    df_X_org = pd.concat([df_X_org[continuous_features], df_X_org[discrete_features]], axis=1)
+    df_X_org = df_X_org[continuous_features]
 
     continuous_indices = [df_X_org.columns.get_loc(f) for f in continuous_features]
-    discrete_indices = [df_X_org.columns.get_loc(f) for f in discrete_features]
+    discrete_indices = []
 
     feature_values = []
     for c in continuous_features:
-        feature_values.append({c:[min(df_X_org[c]),max(df_X_org[c])]})
-    for d in discrete_features:
-        feature_values.append({d: set(df_X_org[d].unique())})
+        feature_values.append({c: [min(df_X_org[c]), max(df_X_org[c])]})
 
     ## Extracting the precision of continuous features
     types = df_X_org[continuous_features].dtypes
@@ -208,24 +192,20 @@ def PrepareCreditCardDefault(dataset_path, dataset_name):
     df_X_org = df_X_org.round(precision)
 
     ## Scaling continuous features
-    num_feature_scaler = StandardScaler()
+    num_feature_scaler = MinMaxScaler()
     scaled_data = num_feature_scaler.fit_transform(df_X_org.iloc[:, continuous_indices].to_numpy())
     scaled_data = pd.DataFrame(data=scaled_data, columns=continuous_features)
 
     ## Encoding discrete features
     # Ordinal feature transformation
-    ord_feature_encoder = OrdinalEncoder()
-    ord_encoded_data = ord_feature_encoder.fit_transform(df_X_org.iloc[:, discrete_indices].to_numpy())
-    ord_encoded_data = pd.DataFrame(data=ord_encoded_data, columns=discrete_features)
+    ord_feature_encoder = None
 
     # One-hot feature transformation
-    ohe_feature_encoder = OneHotEncoder(sparse=False)
-    ohe_encoded_data = ohe_feature_encoder.fit_transform(ord_encoded_data.to_numpy())
-    ohe_encoded_data = pd.DataFrame(data=ohe_encoded_data)
+    ohe_feature_encoder = None
 
     # Creating ordinal and one-hot data frames
-    df_X_ord = pd.concat([scaled_data, ord_encoded_data], axis=1)
-    df_X_ohe = pd.concat([scaled_data, ohe_encoded_data], axis=1)
+    df_X_ord = scaled_data.copy(deep=True)
+    df_X_ohe = scaled_data.copy(deep=True)
 
     ## Encoding labels
     df_y_le = df_y.copy(deep=True)
@@ -249,21 +229,16 @@ def PrepareCreditCardDefault(dataset_path, dataset_name):
     feature_ranges = {feature_names[i]: [min(X_ord[:, i]), max(X_ord[:, i])] for i in range(X_ord.shape[1])}
     feature_width = np.max(X_ord, axis=0) - np.min(X_ord, axis=0)
 
-    # Extracting ohe feature names
-    feature_name_encoder = OneHotEncoder(sparse=False)
-    feature_name_encoder.fit(df_X_org.iloc[:, discrete_indices])
-    ohe_feature_names = continuous_features + list(feature_name_encoder.get_feature_names(discrete_features))
-
-    n_cat_discrete = ord_encoded_data.nunique().to_list()
+    n_cat_discrete = []
 
     len_continuous_org = [0, df_X_org.iloc[:, continuous_indices].shape[1]]
-    len_discrete_org = [df_X_org.iloc[:, continuous_indices].shape[1], df_X_org.shape[1]]
+    len_discrete_org = []
 
     len_continuous_ord = [0, scaled_data.shape[1]]
-    len_discrete_ord = [scaled_data.shape[1], df_X_ord.shape[1]]
+    len_discrete_ord = []
 
     len_continuous_ohe = [0, scaled_data.shape[1]]
-    len_discrete_ohe = [scaled_data.shape[1], df_X_ohe.shape[1]]
+    len_discrete_ohe = []
 
     ## Returning dataset information
     dataset = {
@@ -281,7 +256,6 @@ def PrepareCreditCardDefault(dataset_path, dataset_name):
         'ohe_feature_encoder': ohe_feature_encoder,
         'num_feature_scaler': num_feature_scaler,
         'feature_names': feature_names,
-        'ohe_feature_names': ohe_feature_names,
         'feature_values': feature_values,
         'feature_indices': feature_indices,
         'feature_ranges': feature_ranges,
@@ -314,32 +288,30 @@ def PrepareHeartDisease(dataset_path, dataset_name):
 
     ## Reading data from a csv file
     df = pd.read_csv(dataset_path + dataset_name, delimiter=',', na_values='?')
+    df.rename(columns={'num': 'class'}, inplace=True)
 
     ## Handling missing values
     df = df.dropna().reset_index(drop=True)
 
     ## Recognizing inputs
-    class_name = 'num'
-    df.loc[df['num'] != 0, 'num'] = 1
+    class_name = 'class'
+    df.loc[df[class_name] != 0, class_name] = 1
     df_X_org = df.loc[:, df.columns!=class_name]
     df_y = df.loc[:, class_name]
 
-    continuous_features = ['age','trestbps','chol','thalach','oldpeak']
-    discrete_features = ['sex','cp','fbs','restecg','exang','slope','ca','thal']
-
+    continuous_features = ['age','sex', 'trestbps','chol', 'fbs', 'thalach', 'exang', 'oldpeak','slope', 'ca']
+    discrete_features = []
     continuous_availability = True
-    discrete_availability = True
+    discrete_availability = False
 
-    df_X_org = pd.concat([df_X_org[continuous_features], df_X_org[discrete_features]], axis=1)
+    df_X_org = df_X_org[continuous_features]
 
     continuous_indices = [df_X_org.columns.get_loc(f) for f in continuous_features]
-    discrete_indices = [df_X_org.columns.get_loc(f) for f in discrete_features]
+    discrete_indices = []
 
     feature_values = []
     for c in continuous_features:
-        feature_values.append({c:[min(df_X_org[c]),max(df_X_org[c])]})
-    for d in discrete_features:
-        feature_values.append({d: set(df_X_org[d].unique())})
+        feature_values.append({c: [min(df_X_org[c]), max(df_X_org[c])]})
 
     ## Extracting the precision of continuous features
     types = df_X_org[continuous_features].dtypes
@@ -358,24 +330,20 @@ def PrepareHeartDisease(dataset_path, dataset_name):
     df_X_org = df_X_org.round(precision)
 
     ## Scaling continuous features
-    num_feature_scaler =StandardScaler()
+    num_feature_scaler = MinMaxScaler()
     scaled_data = num_feature_scaler.fit_transform(df_X_org.iloc[:, continuous_indices].to_numpy())
     scaled_data = pd.DataFrame(data=scaled_data, columns=continuous_features)
 
     ## Encoding discrete features
     # Ordinal feature transformation
-    ord_feature_encoder = OrdinalEncoder()
-    ord_encoded_data = ord_feature_encoder.fit_transform(df_X_org.iloc[:, discrete_indices].to_numpy())
-    ord_encoded_data = pd.DataFrame(data=ord_encoded_data, columns=discrete_features)
+    ord_feature_encoder = None
 
     # One-hot feature transformation
-    ohe_feature_encoder = OneHotEncoder(sparse=False)
-    ohe_encoded_data = ohe_feature_encoder.fit_transform(ord_encoded_data.to_numpy())
-    ohe_encoded_data = pd.DataFrame(data=ohe_encoded_data)
+    ohe_feature_encoder = None
 
     # Creating ordinal and one-hot data frames
-    df_X_ord = pd.concat([scaled_data, ord_encoded_data], axis=1)
-    df_X_ohe = pd.concat([scaled_data, ohe_encoded_data], axis=1)
+    df_X_ord = scaled_data.copy(deep=True)
+    df_X_ohe = scaled_data.copy(deep=True)
 
     ## Encoding labels
     df_y_le = df_y.copy(deep=True)
@@ -399,21 +367,16 @@ def PrepareHeartDisease(dataset_path, dataset_name):
     feature_ranges = {feature_names[i]: [min(X_ord[:, i]), max(X_ord[:, i])] for i in range(X_ord.shape[1])}
     feature_width = np.max(X_ord, axis=0) - np.min(X_ord, axis=0)
 
-    # Extracting ohe feature names
-    feature_name_encoder = OneHotEncoder(sparse=False)
-    feature_name_encoder.fit(df_X_org.iloc[:, discrete_indices])
-    ohe_feature_names = continuous_features + list(feature_name_encoder.get_feature_names(discrete_features))
-
-    n_cat_discrete = ord_encoded_data.nunique().to_list()
+    n_cat_discrete = []
 
     len_continuous_org = [0, df_X_org.iloc[:, continuous_indices].shape[1]]
-    len_discrete_org = [df_X_org.iloc[:, continuous_indices].shape[1], df_X_org.shape[1]]
+    len_discrete_org = []
 
     len_continuous_ord = [0, scaled_data.shape[1]]
-    len_discrete_ord = [scaled_data.shape[1], df_X_ord.shape[1]]
+    len_discrete_ord = []
 
     len_continuous_ohe = [0, scaled_data.shape[1]]
-    len_discrete_ohe = [scaled_data.shape[1], df_X_ohe.shape[1]]
+    len_discrete_ohe = []
 
     ## Returning dataset information
     dataset = {
@@ -431,7 +394,6 @@ def PrepareHeartDisease(dataset_path, dataset_name):
         'ohe_feature_encoder': ohe_feature_encoder,
         'num_feature_scaler': num_feature_scaler,
         'feature_names': feature_names,
-        'ohe_feature_names': ohe_feature_names,
         'feature_values': feature_values,
         'feature_indices': feature_indices,
         'feature_ranges': feature_ranges,
@@ -456,6 +418,7 @@ def PrepareHeartDisease(dataset_path, dataset_name):
         'y': y
     }
 
+
     return dataset
 
 ## Preparing COMPAS dataset
@@ -463,11 +426,6 @@ def PrepareCOMPAS(dataset_path, dataset_name):
 
     ## Reading data from a csv file
     df = pd.read_csv(dataset_path + dataset_name, delimiter=',', skipinitialspace=True)
-
-    # ## Reducing data
-    # np.random.seed(42)
-    # ind = np.random.choice(range(df.shape[0]), size=2000, replace=False)
-    # df = df.iloc[ind, :]
 
     ## Data cleaning
     # handling missing values and converting feature types
@@ -484,6 +442,12 @@ def PrepareCOMPAS(dataset_path, dataset_name):
     df['days_b_screening_arrest'].fillna(df['days_b_screening_arrest'].value_counts().index[0], inplace=True)
     df['length_of_stay'] = df['length_of_stay'].astype(int)
     df['days_b_screening_arrest'] = df['days_b_screening_arrest'].astype(int)
+    cat_to_num = {
+                  "sex": {"Male": 0,
+                          "Female": 1}
+                  }
+
+    df = df.replace(cat_to_num)
 
     # classifying instances with respect to recidivism score
     def get_class(x):
@@ -505,22 +469,21 @@ def PrepareCOMPAS(dataset_path, dataset_name):
     df_X_org = df.loc[:, df.columns!=class_name]
     df_y = df.loc[:, class_name]
 
-    continuous_features = ['age', 'priors_count', 'days_b_screening_arrest', 'length_of_stay']
-    discrete_features = ['age_cat', 'sex', 'race', 'c_charge_degree', 'is_recid', 'is_violent_recid', 'two_year_recid']
+    continuous_features = ['sex', 'age', 'length_of_stay', 'days_b_screening_arrest', 'is_recid',  'is_violent_recid',
+                           'priors_count', 'two_year_recid']
+    discrete_features = []
 
     continuous_availability = True
-    discrete_availability = True
+    discrete_availability = False
 
-    df_X_org = pd.concat([df_X_org[continuous_features], df_X_org[discrete_features]], axis=1)
+    df_X_org = df_X_org[continuous_features]
 
     continuous_indices = [df_X_org.columns.get_loc(f) for f in continuous_features]
-    discrete_indices = [df_X_org.columns.get_loc(f) for f in discrete_features]
+    discrete_indices = []
 
     feature_values = []
     for c in continuous_features:
-        feature_values.append({c:[min(df_X_org[c]),max(df_X_org[c])]})
-    for d in discrete_features:
-        feature_values.append({d: set(df_X_org[d].unique())})
+        feature_values.append({c: [min(df_X_org[c]), max(df_X_org[c])]})
 
     ## Extracting the precision of continuous features
     types = df_X_org[continuous_features].dtypes
@@ -539,24 +502,20 @@ def PrepareCOMPAS(dataset_path, dataset_name):
     df_X_org = df_X_org.round(precision)
 
     ## Scaling continuous features
-    num_feature_scaler =StandardScaler()
+    num_feature_scaler = MinMaxScaler()
     scaled_data = num_feature_scaler.fit_transform(df_X_org.iloc[:, continuous_indices].to_numpy())
     scaled_data = pd.DataFrame(data=scaled_data, columns=continuous_features)
 
     ## Encoding discrete features
     # Ordinal feature transformation
-    ord_feature_encoder = OrdinalEncoder()
-    ord_encoded_data = ord_feature_encoder.fit_transform(df_X_org.iloc[:, discrete_indices].to_numpy())
-    ord_encoded_data = pd.DataFrame(data=ord_encoded_data, columns=discrete_features)
+    ord_feature_encoder = None
 
     # One-hot feature transformation
-    ohe_feature_encoder = OneHotEncoder(sparse=False)
-    ohe_encoded_data = ohe_feature_encoder.fit_transform(ord_encoded_data.to_numpy())
-    ohe_encoded_data = pd.DataFrame(data=ohe_encoded_data)
+    ohe_feature_encoder = None
 
     # Creating ordinal and one-hot data frames
-    df_X_ord = pd.concat([scaled_data, ord_encoded_data], axis=1)
-    df_X_ohe = pd.concat([scaled_data, ohe_encoded_data], axis=1)
+    df_X_ord = scaled_data.copy(deep=True)
+    df_X_ohe = scaled_data.copy(deep=True)
 
     ## Encoding labels
     df_y_le = df_y.copy(deep=True)
@@ -580,21 +539,16 @@ def PrepareCOMPAS(dataset_path, dataset_name):
     feature_ranges = {feature_names[i]: [min(X_ord[:, i]), max(X_ord[:, i])] for i in range(X_ord.shape[1])}
     feature_width = np.max(X_ord, axis=0) - np.min(X_ord, axis=0)
 
-    # Extracting ohe feature names
-    feature_name_encoder = OneHotEncoder(sparse=False)
-    feature_name_encoder.fit(df_X_org.iloc[:, discrete_indices])
-    ohe_feature_names = continuous_features + list(feature_name_encoder.get_feature_names(discrete_features))
-
-    n_cat_discrete = ord_encoded_data.nunique().to_list()
+    n_cat_discrete = []
 
     len_continuous_org = [0, df_X_org.iloc[:, continuous_indices].shape[1]]
-    len_discrete_org = [df_X_org.iloc[:, continuous_indices].shape[1], df_X_org.shape[1]]
+    len_discrete_org = []
 
     len_continuous_ord = [0, scaled_data.shape[1]]
-    len_discrete_ord = [scaled_data.shape[1], df_X_ord.shape[1]]
+    len_discrete_ord = []
 
     len_continuous_ohe = [0, scaled_data.shape[1]]
-    len_discrete_ohe = [scaled_data.shape[1], df_X_ohe.shape[1]]
+    len_discrete_ohe = []
 
     ## Returning dataset information
     dataset = {
@@ -612,7 +566,6 @@ def PrepareCOMPAS(dataset_path, dataset_name):
         'ohe_feature_encoder': ohe_feature_encoder,
         'num_feature_scaler': num_feature_scaler,
         'feature_names': feature_names,
-        'ohe_feature_names': ohe_feature_names,
         'feature_values': feature_values,
         'feature_indices': feature_indices,
         'feature_ranges': feature_ranges,
@@ -644,31 +597,56 @@ def PrepareGermanCredit(dataset_path, dataset_name):
 
     ## Reading data from a csv file
     df = pd.read_csv(dataset_path + dataset_name, delimiter=',')
+    df.rename(columns={'default': 'class'}, inplace=True)
+
+    cat_to_num = {
+                  "account_check_status": {"no checking account": 0,
+                                           "< 0 DM": 1,
+                                           "0 <= ... < 200 DM": 2,
+                                           ">= 200 DM / salary assignments for at least 1 year":3},
+
+                  "savings": {"unknown/ no savings account": 0,
+                              "... < 100 DM": 1,
+                              "100 <= ... < 500 DM": 2,
+                              "500 <= ... < 1000 DM ": 3,
+                              ".. >= 1000 DM ": 4},
+
+                  "present_emp_since": {"unemployed": 0,
+                                        "... < 1 year ": 1,
+                                        "1 <= ... < 4 years": 2,
+                                        "4 <= ... < 7 years": 3,
+                                        ".. >= 7 years": 4},
+                  "telephone": {"none": 0,
+                                "yes, registered under the customers name ": 1},
+
+                  "foreign_worker": {"no": 0,
+                                     "yes": 1}
+
+                  }
+
+    df = df.replace(cat_to_num)
 
     ## Recognizing inputs
-    class_name = 'default'
+    class_name = 'class'
     df_X_org = df.loc[:, df.columns!=class_name]
     df_y = df.loc[:, class_name]
 
-    continuous_features = ['duration_in_month', 'credit_amount', 'installment_as_income_perc', 'present_res_since',
-                           'age', 'credits_this_bank', 'people_under_maintenance']
-    discrete_features = ['account_check_status',  'credit_history', 'purpose', 'savings', 'present_emp_since',
-                         'personal_status_sex', 'other_debtors', 'property', 'other_installment_plans', 'housing',
-                         'job', 'telephone', 'foreign_worker']
+    continuous_features = ['account_check_status', 'duration_in_month', 'credit_amount', 'savings', 'present_emp_since',
+                           'installment_as_income_perc', 'present_res_since', 'age', 'credits_this_bank',
+                           'people_under_maintenance', 'telephone','foreign_worker']
+    discrete_features = []
 
     continuous_availability = True
-    discrete_availability = True
+    discrete_availability = False
 
-    df_X_org = pd.concat([df_X_org[continuous_features], df_X_org[discrete_features]], axis=1)
+    df_X_org = df_X_org[continuous_features]
 
     continuous_indices = [df_X_org.columns.get_loc(f) for f in continuous_features]
-    discrete_indices = [df_X_org.columns.get_loc(f) for f in discrete_features]
+    discrete_indices = []
 
     feature_values = []
     for c in continuous_features:
-        feature_values.append({c:[min(df_X_org[c]),max(df_X_org[c])]})
-    for d in discrete_features:
-        feature_values.append({d: set(df_X_org[d].unique())})
+        feature_values.append({c: [min(df_X_org[c]), max(df_X_org[c])]})
 
     ## Extracting the precision of continuous features
     types = df_X_org[continuous_features].dtypes
@@ -687,24 +665,20 @@ def PrepareGermanCredit(dataset_path, dataset_name):
     df_X_org = df_X_org.round(precision)
 
     ## Scaling continuous features
-    num_feature_scaler =StandardScaler()
+    num_feature_scaler = MinMaxScaler()
     scaled_data = num_feature_scaler.fit_transform(df_X_org.iloc[:, continuous_indices].to_numpy())
     scaled_data = pd.DataFrame(data=scaled_data, columns=continuous_features)
 
     ## Encoding discrete features
     # Ordinal feature transformation
-    ord_feature_encoder = OrdinalEncoder()
-    ord_encoded_data = ord_feature_encoder.fit_transform(df_X_org.iloc[:, discrete_indices].to_numpy())
-    ord_encoded_data = pd.DataFrame(data=ord_encoded_data, columns=discrete_features)
+    ord_feature_encoder = None
 
     # One-hot feature transformation
-    ohe_feature_encoder = OneHotEncoder(sparse=False)
-    ohe_encoded_data = ohe_feature_encoder.fit_transform(ord_encoded_data.to_numpy())
-    ohe_encoded_data = pd.DataFrame(data=ohe_encoded_data)
+    ohe_feature_encoder = None
 
     # Creating ordinal and one-hot data frames
-    df_X_ord = pd.concat([scaled_data, ord_encoded_data], axis=1)
-    df_X_ohe = pd.concat([scaled_data, ohe_encoded_data], axis=1)
+    df_X_ord = scaled_data.copy(deep=True)
+    df_X_ohe = scaled_data.copy(deep=True)
 
     ## Encoding labels
     df_y_le = df_y.copy(deep=True)
@@ -728,21 +702,16 @@ def PrepareGermanCredit(dataset_path, dataset_name):
     feature_ranges = {feature_names[i]: [min(X_ord[:, i]), max(X_ord[:, i])] for i in range(X_ord.shape[1])}
     feature_width = np.max(X_ord, axis=0) - np.min(X_ord, axis=0)
 
-    # Extracting ohe feature names
-    feature_name_encoder = OneHotEncoder(sparse=False)
-    feature_name_encoder.fit(df_X_org.iloc[:, discrete_indices])
-    ohe_feature_names = continuous_features + list(feature_name_encoder.get_feature_names(discrete_features))
-
-    n_cat_discrete = ord_encoded_data.nunique().to_list()
+    n_cat_discrete = []
 
     len_continuous_org = [0, df_X_org.iloc[:, continuous_indices].shape[1]]
-    len_discrete_org = [df_X_org.iloc[:, continuous_indices].shape[1], df_X_org.shape[1]]
+    len_discrete_org = []
 
     len_continuous_ord = [0, scaled_data.shape[1]]
-    len_discrete_ord = [scaled_data.shape[1], df_X_ord.shape[1]]
+    len_discrete_ord = []
 
     len_continuous_ohe = [0, scaled_data.shape[1]]
-    len_discrete_ohe = [scaled_data.shape[1], df_X_ohe.shape[1]]
+    len_discrete_ohe = []
 
     ## Returning dataset information
     dataset = {
@@ -760,7 +729,6 @@ def PrepareGermanCredit(dataset_path, dataset_name):
         'ohe_feature_encoder': ohe_feature_encoder,
         'num_feature_scaler': num_feature_scaler,
         'feature_names': feature_names,
-        'ohe_feature_names': ohe_feature_names,
         'feature_values': feature_values,
         'feature_indices': feature_indices,
         'feature_ranges': feature_ranges,
