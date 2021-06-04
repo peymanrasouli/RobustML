@@ -44,10 +44,10 @@ def main():
     # defining the list of data sets
     datsets_list = {
         'adult': ('adult.csv', PrepareAdult, 'classification'),
-        # 'credit-card_default': ('credit-card-default.csv', PrepareCreditCardDefault, 'classification'),
-        # 'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
-        # 'german-credit': ('german-credit.csv', PrepareGermanCredit, 'classification'),
-        # 'heart-disease': ('heart-disease.csv', PrepareHeartDisease, 'classification'),
+        'credit-card_default': ('credit-card-default.csv', PrepareCreditCardDefault, 'classification'),
+        'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
+        'german-credit': ('german-credit.csv', PrepareGermanCredit, 'classification'),
+        'heart-disease': ('heart-disease.csv', PrepareHeartDisease, 'classification'),
     }
 
     # defining the list of black-boxes
@@ -98,7 +98,7 @@ def main():
                                  x_init=0.2,
                                  neighbor_init=0.8,
                                  random_init=0.4,
-                                 K_nbrs=200)
+                                 K_nbrs=100)
             care_explainer.fit(X_train, Y_train)
 
 
@@ -191,7 +191,7 @@ def main():
 
 
             # sub-sampling to evaluate the robustness
-            N = 10
+            N = int(0.2 * X_test.shape[0])
             config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
             # generating adversarial examples
@@ -222,7 +222,7 @@ def main():
                     ind_c = np.where(Y_KNN==c)[0]
                     X_c = X_KNN[ind_c,:]
                     Y_c = Y_KNN[ind_c]
-                    KNN[c] = NearestNeighbors(n_neighbors=100).fit(X_c, Y_c)
+                    KNN[c] = NearestNeighbors(n_neighbors=50).fit(X_c, Y_c)
 
                 for method, results in config['AdvData'].items():
 
@@ -291,6 +291,7 @@ def main():
             print('\n')
             performance = evaluate_performance(config)
             print(performance)
+            print('\n')
 
 if __name__ == '__main__':
     main()
