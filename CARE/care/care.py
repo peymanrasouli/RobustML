@@ -499,7 +499,7 @@ class CARE():
         lof_models = {}
         for key, data in self.groundtruthData.items():
             data_ohe = ord2ohe(data, self.dataset)
-            lof_model = LocalOutlierFactor(n_neighbors=1, novelty=True, algorithm='ball_tree', metric='minkowski', p=2)
+            lof_model = LocalOutlierFactor(n_neighbors=1, novelty=True, algorithm='ball_tree', metric='l2') # metric='minkowski', p=2)
             lof_model.fit(data_ohe)
 
             lof_models[key] = lof_model
@@ -513,8 +513,8 @@ class CARE():
         hdbscan_models = {}
         for key, data in self.groundtruthData.items():
             data_ohe = ord2ohe(data, self.dataset)
-            hdbscan_model = hdbscan.HDBSCAN(min_samples=2, metric='minkowski', p=2, prediction_data=True,
-                                            approx_min_span_tree=False, gen_min_span_tree=True).fit(data_ohe)
+            hdbscan_model = hdbscan.HDBSCAN(min_samples=2, metric='l2', prediction_data=True,
+                                            approx_min_span_tree=False, gen_min_span_tree=True).fit(data_ohe) # metric='minkowski', p=2)
             hdbscan_models[key] = hdbscan_model
         return hdbscan_models
 
@@ -578,7 +578,7 @@ class CARE():
         for key, data in self.groundtruthData.items():
             data_ohe = ord2ohe(data, self.dataset)
             K_nbrs = min(self.K_nbrs, len(data_ohe))
-            neighborhood_model = NearestNeighbors(n_neighbors=K_nbrs, algorithm='ball_tree', metric='minkowski', p=2)
+            neighborhood_model = NearestNeighbors(n_neighbors=K_nbrs, algorithm='ball_tree', metric='l2') # metric='minkowski', p=2)
             neighborhood_model.fit(data_ohe)
             neighborhood_models[key] = neighborhood_model
         return neighborhood_models
