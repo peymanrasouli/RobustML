@@ -106,7 +106,7 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
 
         # training hyper-parameteres
         epochs = 100
-        batch_size = 100
+        batch_size = 100 if (X_train.shape[0] % 2) == 0 else 101
         blackbox = DNN(X_train.shape[1])
         lr = 1e-4
 
