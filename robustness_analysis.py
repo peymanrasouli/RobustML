@@ -195,13 +195,14 @@ def main():
             config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
             # generating adversarial examples
-            print('LowProFool is in progress ...')
-            results_lpf = gen_adv(config, 'LowProFool')
-            print('DeepFool is in progress ...')
-            results_df = gen_adv(config, 'DeepFool')
+            # print('LowProFool is in progress ...')
+            # results_lpf = gen_adv(config, 'LowProFool')
+            # print('DeepFool is in progress ...')
+            # results_df = gen_adv(config, 'DeepFool')
             print('CARE is in progress ...')
             results_care = gen_adv(config, 'CARE')
-            config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df, 'CARE': results_care}
+            # config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df, 'CARE': results_care}
+            config['AdvData'] = {'CARE': results_care}
 
             # evaluating the performance of baseline methods
             def evaluate_performance(config):
