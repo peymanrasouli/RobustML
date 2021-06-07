@@ -95,9 +95,9 @@ def main():
                                  n_cf=1,
                                  n_population=100,
                                  n_generation=20,
-                                 x_init=0.2,
-                                 neighbor_init=0.8,
-                                 random_init=0.4,
+                                 x_init=0.5,
+                                 neighbor_init=0.5,
+                                 random_init=0.5,
                                  K_nbrs=100)
             care_explainer.fit(X_train, Y_train)
 
