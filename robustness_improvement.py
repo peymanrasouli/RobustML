@@ -203,7 +203,7 @@ def main():
                 printProgressBar(i + 1, X_train.shape[0], prefix='Progress:', suffix='Complete', length=50)
 
             # retraining the blackbox using improved data (original train data + generated counterfactuals)
-            n_bins = 10
+            n_bins = 8
             bins = np.linspace(min(D_cfs), max(D_cfs), n_bins)
             X_cfs = np.asarray(X_cfs)
             Y_cfs = np.asarray(Y_cfs)
