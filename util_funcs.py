@@ -96,16 +96,23 @@ def evaluate_performance(config):
         metrics = []
         X_orig = np.asarray(results['X_orig'])
         X_adv = np.asarray(results['X_adv'])
+        exe_time = np.asarray(results['Time'])
         predict_fn = config['Predict_fn']
         predict_proba_fn =  config['Predict_proba_fn']
+
+        # calculate the metrics based on valid examples
+        pred_orig = predict_fn(X_orig)
+        pred_adv =predict_fn(X_adv)
+        ind_valid = np.where(pred_orig != pred_adv)[0]
+        X_orig = X_orig[ind_valid]
+        X_adv = X_adv[ind_valid]
+        exe_time = exe_time[ind_valid]
 
         # method's name
         metrics.append(method)
 
         # success rate
-        pred_orig = predict_fn(X_orig)
-        pred_adv =predict_fn(X_adv)
-        success_rate = np.round(np.mean(pred_orig != pred_adv),3)
+        success_rate = np.round((len(ind_valid)/np.asarray(results['X_orig']).shape[0]),3)
         metrics.append(success_rate)
 
         # norm perturbations
@@ -117,7 +124,7 @@ def evaluate_performance(config):
         metrics.append(std_norm_perturbations)
 
         # probability
-        target_class = 1 - pred_orig
+        target_class = 1 - predict_fn(X_orig)
         proba_adv = predict_proba_fn(X_adv)
         proba_adv = [proba_adv[i,t] for i,t in enumerate(target_class)]
         mean_proba = np.round(np.mean(proba_adv),3)
@@ -144,7 +151,6 @@ def evaluate_performance(config):
         metrics.append(std_knn)
 
         # time complexity
-        exe_time = np.asarray(results['Time'])
         mean_exe_time = np.round(np.mean(exe_time),3)
         std_exe_time = np.round(np.std(exe_time),3)
         metrics.append(mean_exe_time)
