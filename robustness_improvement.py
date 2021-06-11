@@ -182,7 +182,7 @@ def main():
             care_improvement.fit(X_train, Y_train)
 
             print('Generating boundary counterfactuals to improve the inter-class margin:')
-            prob_thresh = 0.65
+            prob_thresh = 0.7
             X_cfs = []
             Y_cfs = []
             D_cfs = []
@@ -210,7 +210,7 @@ def main():
 
             for b in range(1, n_bins):
                 print('\n')
-                print('Robustness of improved blackbox using counterfactuals within range bin --%d--:' % (b))
+                print('Robustness of improved blackbox using counterfactuals within range bin --%d-- with ratio --%.3f--:' % (b,bins[b]))
                 print('\n')
 
                 selected_cfs = np.where(D_cfs <= bins[b])[0]
