@@ -146,8 +146,10 @@ def main():
 
             print('\n')
             performance = evaluate_performance(config)
-            print(performance)
-            print('\n')
+            for method, results in performance.items():
+                print(method)
+                print(results)
+                print('\n')
 
             ########################################## Robustness Improvement ########################################
             # making prediction for training data
@@ -182,7 +184,7 @@ def main():
             care_improvement.fit(X_train, Y_train)
 
             print('Generating boundary counterfactuals to improve the inter-class margin:')
-            prob_thresh = 0.7
+            prob_thresh = 0.65
             X_cfs = []
             Y_cfs = []
             D_cfs = []
@@ -292,8 +294,10 @@ def main():
 
                 print('\n')
                 performance = evaluate_performance(config)
-                print(performance)
-                print('\n')
+                for method, results in performance.items():
+                    print(method)
+                    print(results)
+                    print('\n')
 
 
 if __name__ == '__main__':

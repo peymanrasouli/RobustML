@@ -70,69 +70,47 @@ def gen_adv(config, method):
     return results
 
 
-   # evaluating the performance of baseline methods
+# evaluating the performance of baseline methods
 def evaluate_performance(config):
-
-    performance = pd.DataFrame(columns=['Method', 'SuccessRate',
-                                        'MeanNormPerturbation', 'StdNormPerturbation',
-                                        'MeanProbability', 'StdProbability',
-                                        'MeanNearestNeighbor', 'StdNearestNeighbor',
-                                        'MeanKNNN', 'StdKNN',
-                                        'MeanTime', 'StdTime'])
 
     TrainData = config['TrainData']
     X_KNN = TrainData.values[:,:-1]
     Y_KNN = TrainData.values[:, -1].astype(int)
 
     KNN = [[],[]]
-    for c in [0,1]:
-        ind_c = np.where(Y_KNN==c)[0]
-        X_c = X_KNN[ind_c,:]
-        Y_c = Y_KNN[ind_c]
-        KNN[c] = NearestNeighbors(n_neighbors=50).fit(X_c, Y_c)
+    for j in [0,1]:
+        ind_j = np.where(Y_KNN==j)[0]
+        X_j = X_KNN[ind_j,:]
+        Y_j = Y_KNN[ind_j]
+        KNN[j] = NearestNeighbors(n_neighbors=50).fit(X_j, Y_j)
 
+    performance_all = {}
     for method, results in config['AdvData'].items():
 
-        metrics = []
         X_orig = np.asarray(results['X_orig'])
         X_adv = np.asarray(results['X_adv'])
-        exe_time = np.asarray(results['Time'])
         predict_fn = config['Predict_fn']
         predict_proba_fn =  config['Predict_proba_fn']
 
-        # calculate the metrics based on valid examples
         pred_orig = predict_fn(X_orig)
         pred_adv =predict_fn(X_adv)
-        ind_valid = np.where(pred_orig != pred_adv)[0]
-        X_orig = X_orig[ind_valid]
-        X_adv = X_adv[ind_valid]
-        exe_time = exe_time[ind_valid]
 
-        # method's name
-        metrics.append(method)
+        validity = (pred_orig != pred_adv)
 
-        # success rate
-        success_rate = np.round((len(ind_valid)/np.asarray(results['X_orig']).shape[0]),3)
-        metrics.append(success_rate)
-
-        # norm perturbations
         perturbations = np.abs(X_orig - X_adv)
         norm_perturbations =  np.linalg.norm(perturbations, axis=1)
-        mean_norm_perturbations = np.round(np.mean(norm_perturbations),3)
-        std_norm_perturbations = np.round(np.std(norm_perturbations),3)
-        metrics.append(mean_norm_perturbations)
-        metrics.append(std_norm_perturbations)
 
-        # probability
+        robustness = 0
+        for j in [0,1]:
+            ind = np.where(pred_orig==j)[0]
+            D_j = norm_perturbations[ind]
+            N_j = len(ind)
+            robustness = robustness + (sum(D_j)/N_j)
+
         target_class = 1 - predict_fn(X_orig)
         proba_adv = predict_proba_fn(X_adv)
-        proba_adv = [proba_adv[i,t] for i,t in enumerate(target_class)]
-        mean_proba = np.round(np.mean(proba_adv),3)
-        std_proba = np.round(np.std(proba_adv),3)
-        metrics.append(mean_proba)
-        metrics.append(std_proba)
+        proba_adv = [proba_adv[i, t] for i, t in enumerate(target_class)]
 
-        # distance to nearest neighbor and K-nearest neighbor
         dist_to_nn = []
         dist_to_knn = []
         for x, c in zip(X_adv, target_class):
@@ -140,23 +118,66 @@ def evaluate_performance(config):
             dist_to_nn.append(distances[0][0])
             dist_to_knn.append(np.mean(distances[0]))
 
-        mean_nearest_neighbor = np.round(np.mean(dist_to_nn),3)
-        std_nearest_neighbor = np.round(np.std(dist_to_nn),3)
-        metrics.append(mean_nearest_neighbor)
-        metrics.append(std_nearest_neighbor)
+        exe_time = np.asarray(results['Time'])
 
-        mean_knn = np.round(np.mean(dist_to_knn),3)
-        std_knn = np.round(np.std(dist_to_knn),3)
-        metrics.append(mean_knn)
-        metrics.append(std_knn)
+        overall_robustness = [np.sum(validity)/len(validity), np.round(robustness,3),
+                              np.round(np.mean(norm_perturbations),3), np.round(np.std(norm_perturbations),3),
+                              np.round(np.mean(proba_adv),3),  np.round(np.std(proba_adv),3),
+                              np.round(np.mean(dist_to_nn),3),  np.round(np.std(dist_to_nn),3),
+                              np.round(np.mean(dist_to_knn), 3), np.round(np.std(dist_to_knn),3),
+                              np.round(np.mean(exe_time), 3), np.round(np.std(exe_time), 3)]
 
-        # time complexity
-        mean_exe_time = np.round(np.mean(exe_time),3)
-        std_exe_time = np.round(np.std(exe_time),3)
-        metrics.append(mean_exe_time)
-        metrics.append(std_exe_time)
 
-        performance = performance.append(pd.DataFrame(columns=performance.columns,
-                                                      data=np.asarray(metrics).reshape(1,-1)),
-                                         ignore_index=True)
-    return performance
+        class_robustness = [[], []]
+        for j in [0,1]:
+
+            validity_j = validity[np.where(pred_orig==j)]
+
+            ind_i = np.where(pred_orig == (1-j))[0]
+            D_i = norm_perturbations[ind_i]
+            N_i = len(ind_i)
+            alpha = np.sum(D_i) / N_i
+
+            ind_j = np.where(pred_orig == j)[0]
+            D_j = norm_perturbations[ind_j]
+            N_j = len(ind_j)
+            beta = np.sum(D_j) / N_j
+
+            robustness_j = alpha / beta
+
+            norm_perturbations_j = norm_perturbations[ind_j]
+
+            proba_adv_j = np.asarray(proba_adv)[ind_j]
+
+            dist_to_nn_j = np.asarray(dist_to_nn)[ind_j]
+
+            dist_to_knn_j = np.asarray(dist_to_knn)[ind_j]
+
+            exe_time_j = exe_time[ind_j]
+
+            robustness_j = [np.sum(validity_j)/len(validity_j), np.round(robustness_j, 3),
+                            np.round(np.mean(norm_perturbations_j), 3), np.round(np.std(norm_perturbations_j), 3),
+                            np.round(np.mean(proba_adv_j), 3), np.round(np.std(proba_adv_j), 3),
+                            np.round(np.mean(dist_to_nn_j), 3), np.round(np.std(dist_to_nn_j), 3),
+                            np.round(np.mean(dist_to_knn_j), 3), np.round(np.std(dist_to_knn_j), 3),
+                            np.round(np.mean(exe_time_j), 3), np.round(np.std(exe_time_j), 3)]
+
+            class_robustness[j] = robustness_j
+
+        robustness = []
+        robustness.append(overall_robustness)
+        for l in class_robustness:
+            robustness.append(l)
+        robustness = np.asarray(robustness)
+
+        performance = pd.DataFrame(columns=['SuccessRate', 'Robustness',
+                                            'MeanNormPerturbation', 'StdNormPerturbation',
+                                            'MeanProbability', 'StdProbability',
+                                            'MeanNearestNeighbor', 'StdNearestNeighbor',
+                                            'MeanKNNN', 'StdKNN',
+                                            'MeanTime', 'StdTime'], data=robustness,
+                                   index=['Overall', 'Class_0', 'Class_1'])
+
+        performance_all[method] = performance
+
+    return performance_all

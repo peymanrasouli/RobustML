@@ -42,9 +42,9 @@ def main():
 
     # defining the list of data sets
     datsets_list = {
-        'adult': ('adult.csv', PrepareAdult, 'classification'),
-        'credit-card_default': ('credit-card-default.csv', PrepareCreditCardDefault, 'classification'),
-        'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
+        # 'adult': ('adult.csv', PrepareAdult, 'classification'),
+        # 'credit-card_default': ('credit-card-default.csv', PrepareCreditCardDefault, 'classification'),
+        # 'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
         'german-credit': ('german-credit.csv', PrepareGermanCredit, 'classification'),
         'heart-disease': ('heart-disease.csv', PrepareHeartDisease, 'classification'),
     }
@@ -142,8 +142,10 @@ def main():
 
             print('\n')
             performance = evaluate_performance(config)
-            print(performance)
-            print('\n')
+            for method, results in performance.items():
+                print(method)
+                print(results)
+                print('\n')
 
 if __name__ == '__main__':
     main()
