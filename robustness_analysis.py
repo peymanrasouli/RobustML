@@ -42,9 +42,9 @@ def main():
 
     # defining the list of data sets
     datsets_list = {
-        # 'adult': ('adult.csv', PrepareAdult, 'classification'),
-        # 'credit-card_default': ('credit-card-default.csv', PrepareCreditCardDefault, 'classification'),
-        # 'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
+        'adult': ('adult.csv', PrepareAdult, 'classification'),
+        'credit-card_default': ('credit-card-default.csv', PrepareCreditCardDefault, 'classification'),
+        'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
         'german-credit': ('german-credit.csv', PrepareGermanCredit, 'classification'),
         'heart-disease': ('heart-disease.csv', PrepareHeartDisease, 'classification'),
     }
@@ -52,10 +52,10 @@ def main():
     # defining the list of black-boxes
     blackbox_list = {
         'nn': MLPClassifier,
-        # 'gb': GradientBoostingClassifier,
-        # 'svc': SVC,
-        # 'rf': RandomForestClassifier,
-        # 'dt': DecisionTreeClassifier
+        'gb': GradientBoostingClassifier,
+        'svc': SVC,
+        'rf': RandomForestClassifier,
+        'dt': DecisionTreeClassifier
     }
 
     for dataset_kw in datsets_list:
@@ -132,13 +132,14 @@ def main():
             config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
             # generating adversarial examples
-            print('LowProFool is in progress ...')
-            results_lpf = gen_adv(config, 'LowProFool')
-            print('DeepFool is in progress ...')
-            results_df = gen_adv(config, 'DeepFool')
+            # print('LowProFool is in progress ...')
+            # results_lpf = gen_adv(config, 'LowProFool')
+            # print('DeepFool is in progress ...')
+            # results_df = gen_adv(config, 'DeepFool')
             print('CARE is in progress ...')
             results_care = gen_adv(config, 'CARE')
-            config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df, 'CARE': results_care}
+            # config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df, 'CARE': results_care}
+            config['AdvData'] = {'CARE': results_care}
 
             print('\n')
             performance = evaluate_performance(config)
