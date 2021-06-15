@@ -112,8 +112,8 @@ def main():
 
             # building experimental config
             config = {'Dataset': dataset_kw,
-                      'MaxIters': 10000,
-                      'Alpha': 0.01,
+                      'MaxIters': 20000,
+                      'Alpha': 0.1,
                       'Lambda': 0.0,
                       'TrainData': X_train_df,
                       'TestData': X_test_df,
