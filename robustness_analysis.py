@@ -55,7 +55,6 @@ def main():
         'gb': GradientBoostingClassifier,
         'svc': SVC,
         'rf': RandomForestClassifier,
-        'dt': DecisionTreeClassifier
     }
 
     for dataset_kw in datsets_list:
