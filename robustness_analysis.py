@@ -1,38 +1,18 @@
 import warnings
 warnings.filterwarnings("ignore")
-import time
 import pandas as pd
 pd.set_option('max_columns', None)
 pd.set_option('display.width', 1000)
-import seaborn as sns
-# import matplotlib
-# matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-import numpy as np
-import pickle
-from sklearn.metrics import confusion_matrix
 from prepare_datasets import *
 from model_construction import ModelConstruction
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.naive_bayes import GaussianNB
-import torch
 from torch.autograd import Variable
-from progress_bar import printProgressBar
-import random
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.datasets import fetch_openml
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from LowProFool.Adverse import lowProFool, deepfool
-from LowProFool.Metrics import *
-from util_funcs import *
-import sys
-sys.path.insert(0, "CARE_analysis")
-from CARE_analysis.care.care import CARE as CARE_analysis
+from multiobjective_counterfactual_explanation import MOCE
+from generate_perturbations import *
+from evaluate_performance import evaluatePerformance
 
 def main():
     # defining path of data sets and experiment results
@@ -46,7 +26,6 @@ def main():
         'credit-card_default': ('credit-card-default.csv', PrepareCreditCardDefault, 'classification'),
         'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
         'german-credit': ('german-credit.csv', PrepareGermanCredit, 'classification'),
-        'heart-disease': ('heart-disease.csv', PrepareHeartDisease, 'classification'),
     }
 
     # defining the list of black-boxes
@@ -82,22 +61,22 @@ def main():
                 predict_fn = lambda x: blackbox.predict(x).ravel()
                 predict_proba_fn = lambda x: blackbox.predict_proba(x)
 
-            # creating CARE explainer
-            care_analysis = CARE_analysis(dataset,
-                                         task='classification',
-                                         predict_fn=predict_fn,
-                                         predict_proba_fn=predict_proba_fn,
-                                         SOUNDNESS=False,
-                                         COHERENCY=False,
-                                         ACTIONABILITY=False,
-                                         n_cf=1,
-                                         n_population=100,
-                                         n_generation=20,
-                                         x_init=0.3,
-                                         neighbor_init=0.8,
-                                         random_init=0.5,
-                                         K_nbrs=100)
-            care_analysis.fit(X_train, Y_train)
+            # creating multiobjective counterfactual explainer: MOCE
+            MOCE_nonboundary = MOCE(dataset,
+                                     predict_fn=predict_fn,
+                                     predict_proba_fn=predict_proba_fn,
+                                     boundary=False,
+                                     n_cf=5,
+                                     K_nbrs=100,
+                                     n_population=200,
+                                     n_generation=20,
+                                     crossover_perc=0.8,
+                                     mutation_perc=0.5,
+                                     hof_size=100,
+                                     init_x_perc=0.3,
+                                     init_neighbor_perc=0.6,
+                                     init_random_perc=1.0)
+            MOCE_nonboundary.fit(X_train, Y_train)
 
             # creating data frames from the train and test data
             X_train_df = pd.DataFrame(data=np.c_[X_train, Y_train], columns=dataset['feature_names'] + ['class'])
@@ -107,7 +86,7 @@ def main():
             bounds = [np.min(X_train, axis=0), np.max(X_test, axis=0)]
 
             # computing the weights to model the expert's knowledge
-            weights = get_weights(X_train_df, 'class')
+            weights = calculateWeights(X_train_df, 'class')
 
             # building experimental config
             config = {'Dataset': dataset_kw,
@@ -123,25 +102,23 @@ def main():
                       'Model':blackbox,
                       'Predict_fn': predict_fn,
                       'Predict_proba_fn': predict_proba_fn,
-                      'CARE_explainer': care_analysis}
-
+                      'MOCE': MOCE_nonboundary}
 
             # sub-sampling to evaluate the robustness
             N = int(0.2 * X_test.shape[0])
             config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
             # generating adversarial examples
-            # print('LowProFool is in progress ...')
-            # results_lpf = gen_adv(config, 'LowProFool')
-            # print('DeepFool is in progress ...')
-            # results_df = gen_adv(config, 'DeepFool')
-            print('CARE is in progress ...')
-            results_care = gen_adv(config, 'CARE')
-            # config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df, 'CARE': results_care}
-            config['AdvData'] = {'CARE': results_care}
+            print('LowProFool is in progress ...')
+            results_lpf = generatePerturbations(config, 'LowProFool')
+            print('DeepFool is in progress ...')
+            results_df = generatePerturbations(config, 'DeepFool')
+            print('MOCE is in progress ...')
+            results_moce = generatePerturbations(config, 'MOCE')
+            config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df, 'MOCE': results_moce}
 
             print('\n')
-            performance = evaluate_performance(config)
+            performance = evaluatePerformance(config)
             for method, results in performance.items():
                 print(method)
                 print(results)
