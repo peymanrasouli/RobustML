@@ -109,13 +109,9 @@ def main():
             config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
             # generating adversarial examples
-            print('LowProFool is in progress ...')
-            results_lpf = generatePerturbations(config, 'LowProFool')
-            print('DeepFool is in progress ...')
-            results_df = generatePerturbations(config, 'DeepFool')
             print('MOCE is in progress ...')
             results_moce = generatePerturbations(config, 'MOCE')
-            config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df, 'MOCE': results_moce}
+            config['AdvData'] = {'MOCE': results_moce}
 
             print('\n')
             performance = evaluatePerformance(config)

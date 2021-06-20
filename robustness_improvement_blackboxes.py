@@ -16,6 +16,7 @@ from evaluate_performance import evaluatePerformance
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import pairwise_distances
 from progress_bar import printProgressBar
+
 def main():
     # defining path of data sets and experiment results
     path = './'
@@ -53,6 +54,7 @@ def main():
             print('\n')
 
             # creating the black-box model
+            print('Performance of original black-box:')
             blackbox, \
             train_performance, \
             test_performance = ModelConstruction( X_train, X_test, Y_train, Y_test, blackbox_name, blackbox_constructor)
@@ -111,13 +113,9 @@ def main():
             config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
             # generating adversarial examples
-            print('LowProFool is in progress ...')
-            results_lpf = generatePerturbations(config, 'LowProFool')
-            print('DeepFool is in progress ...')
-            results_df = generatePerturbations(config, 'DeepFool')
             print('MOCE is in progress ...')
             results_moce = generatePerturbations(config, 'MOCE')
-            config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df, 'MOCE': results_moce}
+            config['AdvData'] = {'MOCE': results_moce}
 
             print('\n')
             performance = evaluatePerformance(config)
@@ -158,7 +156,6 @@ def main():
                                  init_random_perc=1.0)
             MOCE_boundary.fit(X_train, Y_train)
 
-
             print('Generating boundary counterfactuals to improve the inter-class margin:')
             prob_thresh = 0.65
             X_cfs = []
@@ -188,7 +185,8 @@ def main():
 
             for b in range(1, n_bins):
                 print('\n')
-                print('Robustness of improved blackbox using counterfactuals within range bin --%d-- with ratio --%.3f--:' % (b,bins[b]))
+                print('Robustness of improved black-box using counterfactuals within '
+                      'range bin --%d-- with ratio --%.3f--:' % (b,bins[b]))
                 print('\n')
 
                 selected_cfs = np.where(D_cfs <= bins[b])[0]
@@ -250,7 +248,7 @@ def main():
                           'Target': dataset['class_name'],
                           'Weights': weights,
                           'Bounds': bounds,
-                          'Model': blackbox,
+                          'Model': improved_blackbox,
                           'Predict_fn': improved_predict_fn,
                           'Predict_proba_fn': improved_predict_proba_fn,
                           'MOCE': MOCE_nonboundary}
@@ -260,13 +258,9 @@ def main():
                 config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
                 # generating adversarial examples
-                print('LowProFool is in progress ...')
-                results_lpf = generatePerturbations(config, 'LowProFool')
-                print('DeepFool is in progress ...')
-                results_df = generatePerturbations(config, 'DeepFool')
                 print('MOCE is in progress ...')
                 results_moce = generatePerturbations(config, 'MOCE')
-                config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df, 'MOCE': results_moce}
+                config['AdvData'] = {'MOCE': results_moce}
 
                 print('\n')
                 performance = evaluatePerformance(config)
