@@ -29,7 +29,7 @@ pip install -r requirements.txt
 # Reproducing the robustness analysis results
 1- To reproduce the results of the robustness analysis of black-box models run:
 ```
-python robustness_analysis_blackboxes.py
+python robustness_analysis_blackbox.py
 ```
 2- To reproduce the results of the perturbation efficacy benchmark:
 ```
@@ -39,7 +39,7 @@ python perturbation_efficacy_benchmark.py
 # Reproducing the robustness improvement results
 1- To reproduce the results of the robustness improvement of black-box models run:
 ```
-python robustness_improvement_blackboxes.py
+python robustness_improvement_blackbox.py
 ```
 2- To reproduce the results of the robustness improvement of neural network model run:
 ```
