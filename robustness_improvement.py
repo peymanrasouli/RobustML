@@ -198,8 +198,8 @@ def main():
                 X_add = np.vstack(X_add)
                 Y_add = np.hstack(Y_add)
 
-                X_improved = np.r_[X_train, X_add]
-                Y_improved = np.r_[Y_train, Y_add]
+                X_improved = np.r_[X_correct, X_add]
+                Y_improved = np.r_[Y_correct, Y_add]
 
                 improved_blackbox, \
                 improved_train_performance, \
