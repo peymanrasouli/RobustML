@@ -49,7 +49,7 @@ class MOCE():
 
     def constructObjectiveFunction(self):
 
-        print('Constructing objective function according to -boundary- hyper-parameter ...')
+        # print('Constructing objective function according to -boundary- hyper-parameter ...')
 
         if self.boundary == False:
             # objective names
@@ -112,7 +112,7 @@ class MOCE():
 
     def groundtruthData(self):
 
-        print('Identifying correctly predicted training data for each class ...')
+        # print('Identifying correctly predicted training data for each class ...')
 
         groundtruth_data = {}
 
@@ -130,7 +130,7 @@ class MOCE():
 
     def featureScaler(self):
 
-        print('Creating a scaler for mapping features to equal range ...')
+        # print('Creating a scaler for mapping features to equal range ...')
 
         feature_scaler = MinMaxScaler(feature_range=(0, 1))
         feature_scaler.fit(self.X_train)
@@ -139,7 +139,7 @@ class MOCE():
 
     def neighborhoodModel(self):
 
-        print('Creating neighborhood models for every class of correctly predicted training data ...')
+        # print('Creating neighborhood models for every class of correctly predicted training data ...')
 
         neighborhood_models = {}
         for key, data in self.groundtruthData.items():
@@ -152,7 +152,7 @@ class MOCE():
 
     def fit(self, X_train, Y_train):
 
-        print('Fitting the framework on the training data ...')
+        # print('Fitting the framework on the training data ...')
 
         self.X_train = X_train
         self.Y_train = Y_train
@@ -164,7 +164,7 @@ class MOCE():
     # creating toolbox for optimization algorithm
     def setupToolbox(self, x_ord, x_theta, cf_class, probability_thresh, neighbor_theta):
 
-        print('Creating toolbox for the optimization algorithm ...')
+        # print('Creating toolbox for the optimization algorithm ...')
 
         # initialization function
         def initialization(x_theta, neighbor_theta, n_features, init_probability):
@@ -196,7 +196,7 @@ class MOCE():
     # executing the optimization algorithm
     def runEA(self):
 
-        print('Running NSGA-III optimization algorithm ...')
+        # print('Running NSGA-III optimization algorithm ...')
 
         # Initialize statistics object
         stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -219,7 +219,7 @@ class MOCE():
         # Compile statistics about the population
         record = stats.compile(pop)
         logbook.record(pop=pop, gen=0, evals=len(invalid_ind), **record)
-        print(logbook.stream)
+        # print(logbook.stream)
 
         # Begin the generational process
         for gen in range(1, self.n_generation):
@@ -238,7 +238,7 @@ class MOCE():
             hof.update(pop)
             record = stats.compile(pop)
             logbook.record(pop=pop, gen=gen, evals=len(invalid_ind), **record)
-            print(logbook.stream)
+            # print(logbook.stream)
 
         fronts = tools.emo.sortLogNondominated(pop, self.n_population)
 
@@ -251,7 +251,7 @@ class MOCE():
                 probability_thresh=0.5,
                 ):
 
-        print('Generating counterfactual explanations ...')
+        # print('Generating counterfactual explanations ...')
 
         # finding the label of counterfactual instance
         if cf_class is 'opposite':
