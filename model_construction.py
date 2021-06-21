@@ -1,28 +1,15 @@
 import torch
+torch.set_num_threads(15)
 import torch.nn as nn
 from torch.autograd import Variable
-import torch.nn.functional as F
 from tensorflow import keras
-# pytorch mlp for binary classification
-from numpy import vstack
-from pandas import read_csv
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score
-from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
-from torch.utils.data import random_split
-from torch import Tensor
 from torch.nn import Linear
 from torch.nn import ReLU
 from torch.nn import Sigmoid
-from torch.nn import Module
-from torch.optim import SGD
-from torch.nn import BCELoss
 from torch.nn.init import kaiming_uniform_
 from torch.nn.init import xavier_uniform_
 import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-
 
 def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor):
 
