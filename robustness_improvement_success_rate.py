@@ -69,44 +69,41 @@ def main():
             # computing the weights to model the expert's knowledge
             weights = calculateWeights(X_train_df, 'class')
 
-            # measuring the success rate w.r.t. different values of alpha
-            for alpha in np.linspace(0.001, 0.15, 10):
-                print('Success rate for alpha =', alpha)
-                print('-------------------------------')
+            # building experimental config
+            config = {'Dataset': dataset_kw,
+                      'MaxIters': 10000,
+                      'Alpha': 0.001,
+                      'Lambda': 1.0,
+                      'Epsilon': 0.05,
+                      'TrainData': X_train_df,
+                      'TestData': X_test_df,
+                      'FeatureNames': dataset['feature_names'],
+                      'Target': dataset['class_name'],
+                      'Weights': weights,
+                      'Bounds': bounds,
+                      'Model':blackbox,
+                      'Predict_fn': predict_fn,
+                      'Predict_proba_fn': predict_proba_fn,
+                      'MOCE': None}
 
-                # building experimental config
-                config = {'Dataset': dataset_kw,
-                          'MaxIters': 20000,
-                          'Alpha': alpha,
-                          'Lambda': 0.0,
-                          'TrainData': X_train_df,
-                          'TestData': X_test_df,
-                          'FeatureNames': dataset['feature_names'],
-                          'Target': dataset['class_name'],
-                          'Weights': weights,
-                          'Bounds': bounds,
-                          'Model':blackbox,
-                          'Predict_fn': predict_fn,
-                          'Predict_proba_fn': predict_proba_fn,
-                          'MOCE': None}
+            # sub-sampling to evaluate the robustness
+            N = int(0.1 * X_test.shape[0])
+            config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
-                # sub-sampling to evaluate the robustness
-                N = int(0.2 * X_test.shape[0])
-                config['TestData'] = config['TestData'].sample(n=N, random_state=42)
+            # generating adversarial examples
+            print('LowProFool is in progress ...')
+            results_lpf = generatePerturbations(config, 'LowProFool')
+            print('DeepFool is in progress ...')
+            results_df = generatePerturbations(config, 'DeepFool')
+            config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df}
 
-                # generating adversarial examples
-                print('LowProFool is in progress ...')
-                results_lpf = generatePerturbations(config, 'LowProFool')
-                print('DeepFool is in progress ...')
-                results_df = generatePerturbations(config, 'DeepFool')
-                config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df}
-
-                print('\n')
+            # measuring the success rate w.r.t. different values of epsilon
+            epsilon_success_rate_original = {'LowProFool':[], 'DeepFool': []}
+            for epsilon in np.linspace(0.001, 0.15, 20):
+                config['Epsilon'] = epsilon
                 performance = evaluatePerformance(config)
                 for method, results in performance.items():
-                    print(method)
-                    print(results)
-                    print('\n')
+                    epsilon_success_rate_original[method].append(results.iloc[0,1])
 
             ########################################## Robustness Improvement ########################################
             # making prediction for training data
@@ -130,13 +127,13 @@ def main():
                                  boundary=True,
                                  n_cf=5,
                                  K_nbrs=100,
-                                 n_population=200,
-                                 n_generation=20,
-                                 crossover_perc=0.8,
-                                 mutation_perc=0.5,
+                                 n_population=100,
+                                 n_generation=10,
+                                 crossover_perc=0.6,
+                                 mutation_perc=0.4,
                                  hof_size=100,
                                  init_x_perc=0.3,
-                                 init_neighbor_perc=0.6,
+                                 init_neighbor_perc=0.7,
                                  init_random_perc=1.0)
             MOCE_boundary.fit(X_train, Y_train)
 
@@ -147,6 +144,7 @@ def main():
             Y_cfs = []
             D_cfs = []
             for i, x, y, p in zip(range(X_correct.shape[0]), X_correct, Y_correct, P_correct):
+
                 if p <= prob_thresh:
 
                     explanations = MOCE_boundary.explain(x)
@@ -205,44 +203,56 @@ def main():
                 # computing the weights to model the expert's knowledge
                 weights = calculateWeights(X_train_df, 'class')
 
-                # measuring the success rate w.r.t. different values of alpha
-                for alpha in np.linspace(0.001, 0.15, 10):
-                    print('Success rate for alpha =', alpha)
-                    print('-------------------------------')
+                # building experimental config
+                config = {'Dataset': dataset_kw,
+                          'MaxIters': 10000,
+                          'Alpha': 0.001,
+                          'Lambda': 1.0,
+                          'Epsilon': 0.05,
+                          'TrainData': X_train_df,
+                          'TestData': X_test_df,
+                          'FeatureNames': dataset['feature_names'],
+                          'Target': dataset['class_name'],
+                          'Weights': weights,
+                          'Bounds': bounds,
+                          'Model': improved_blackbox,
+                          'Predict_fn': improved_predict_fn,
+                          'Predict_proba_fn': improved_predict_proba_fn,
+                          'MOCE': None}
 
-                    # building experimental config
-                    config = {'Dataset': dataset_kw,
-                              'MaxIters': 20000,
-                              'Alpha': alpha,
-                              'Lambda': 0.0,
-                              'TrainData': X_train_df,
-                              'TestData': X_test_df,
-                              'FeatureNames': dataset['feature_names'],
-                              'Target': dataset['class_name'],
-                              'Weights': weights,
-                              'Bounds': bounds,
-                              'Model': improved_blackbox,
-                              'Predict_fn': improved_predict_fn,
-                              'Predict_proba_fn': improved_predict_proba_fn,
-                              'MOCE': None}
+                # sub-sampling to evaluate the robustness
+                N = int(0.1 * X_test.shape[0])
+                config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
-                    # sub-sampling to evaluate the robustness
-                    N = int(0.2 * X_test.shape[0])
-                    config['TestData'] = config['TestData'].sample(n=N, random_state=42)
+                # generating adversarial examples
+                print('LowProFool is in progress ...')
+                results_lpf = generatePerturbations(config, 'LowProFool')
+                print('DeepFool is in progress ...')
+                results_df = generatePerturbations(config, 'DeepFool')
+                config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df}
 
-                    # generating adversarial examples
-                    print('LowProFool is in progress ...')
-                    results_lpf = generatePerturbations(config, 'LowProFool')
-                    print('DeepFool is in progress ...')
-                    results_df = generatePerturbations(config, 'DeepFool')
-                    config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df}
-
-                    print('\n')
+                # measuring the success rate w.r.t. different values of epsilon
+                epsilon_success_rate_improved = {'LowProFool': [], 'DeepFool': []}
+                for epsilon in np.linspace(0.001, 0.15, 20):
+                    config['Epsilon'] = epsilon
                     performance = evaluatePerformance(config)
                     for method, results in performance.items():
-                        print(method)
-                        print(results)
-                        print('\n')
+                        epsilon_success_rate_improved[method].append(results.iloc[0, 1])
+
+                # plot the epsilon success rate
+                plt.plot(np.linspace(0.001, 0.15, 20), epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#DC292E')
+                plt.plot(np.linspace(0.001, 0.15, 20), epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#0703B3')
+                plt.plot(np.linspace(0.001, 0.15, 20), epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#DC292E')
+                plt.plot(np.linspace(0.001, 0.15, 20), epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#0703B3')
+                plt.xlabel('epsilon')
+                plt.ylabel('success rate')
+                plt.legend(['LowProFool-NN$_{original}$', 'DeepFool-NN$_{original}$','LowProFool-NN$_{improved}$', 'DeepFool-NN$_{improved}$'])
+                plt.grid()
+                plt.savefig(experiment_path + 'success_rate_' + dataset_kw +
+                            '_' + blackbox_name + '_' + 'bin_' + str(b) + '.pdf')
+                plt.show(block=False)
+                plt.close()
+
 
 if __name__ == '__main__':
     main()

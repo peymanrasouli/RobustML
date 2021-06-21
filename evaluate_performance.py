@@ -6,6 +6,7 @@ from sklearn.neighbors import NearestNeighbors
 def evaluatePerformance(config):
 
     TrainData = config['TrainData']
+    epsilon = config['Epsilon']
     X_KNN = TrainData.values[:,:-1]
     Y_KNN = TrainData.values[:, -1].astype(int)
 
@@ -27,7 +28,13 @@ def evaluatePerformance(config):
         pred_orig = predict_fn(X_orig)
         pred_adv =predict_fn(X_adv)
 
-        validity = (pred_orig != pred_adv)
+        label_valid = (pred_orig != pred_adv)
+        label_success_rate = np.sum(label_valid) / len(label_valid)
+
+        perturbations = np.abs(X_orig - X_adv)
+        mean_perturbations = np.mean(perturbations, axis=1)
+        epsilon_valid = (mean_perturbations <= epsilon)
+        epsilon_success_rate = np.sum(epsilon_valid) / len(epsilon_valid)
 
         perturbations = np.abs(X_orig - X_adv)
         norm_perturbations =  np.linalg.norm(perturbations, axis=1)
@@ -52,7 +59,7 @@ def evaluatePerformance(config):
 
         exe_time = np.asarray(results['Time'])
 
-        overall_robustness = [np.sum(validity)/len(validity), np.round(robustness,3),
+        overall_robustness = [np.round(label_success_rate,3), np.round(epsilon_success_rate,3), np.round(robustness,3),
                               np.round(np.mean(norm_perturbations),3), np.round(np.std(norm_perturbations),3),
                               np.round(np.mean(proba_adv),3),  np.round(np.std(proba_adv),3),
                               np.round(np.mean(dist_to_nn),3),  np.round(np.std(dist_to_nn),3),
@@ -63,7 +70,9 @@ def evaluatePerformance(config):
         class_robustness = [[], []]
         for j in [0,1]:
 
-            validity_j = validity[np.where(pred_orig==j)]
+            label_success_rate_j = label_valid[np.where(pred_orig==j)]
+
+            epsilon_success_rate_j = epsilon_valid[np.where(pred_orig == j)]
 
             ind_i = np.where(pred_orig == (1-j))[0]
             D_i = norm_perturbations[ind_i]
@@ -87,7 +96,9 @@ def evaluatePerformance(config):
 
             exe_time_j = exe_time[ind_j]
 
-            robustness_j = [np.sum(validity_j)/len(validity_j), np.round(robustness_j, 3),
+            robustness_j = [np.round(np.sum(label_success_rate_j)/len(label_success_rate_j),3),
+                            np.round(np.sum(epsilon_success_rate_j) / len(epsilon_success_rate_j),3),
+                            np.round(robustness_j, 3),
                             np.round(np.mean(norm_perturbations_j), 3), np.round(np.std(norm_perturbations_j), 3),
                             np.round(np.mean(proba_adv_j), 3), np.round(np.std(proba_adv_j), 3),
                             np.round(np.mean(dist_to_nn_j), 3), np.round(np.std(dist_to_nn_j), 3),
@@ -102,7 +113,7 @@ def evaluatePerformance(config):
             robustness.append(l)
         robustness = np.asarray(robustness)
 
-        performance = pd.DataFrame(columns=['SuccessRate', 'Robustness',
+        performance = pd.DataFrame(columns=['label-SuccessRate', 'epsilon-SuccessRate', 'Robustness',
                                             'MeanNormPerturbation', 'StdNormPerturbation',
                                             'MeanProbability', 'StdProbability',
                                             'MeanNearestNeighbor', 'StdNearestNeighbor',

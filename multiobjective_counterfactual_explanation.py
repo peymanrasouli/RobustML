@@ -187,7 +187,7 @@ class MOCE():
         toolbox.register("attr_float", initialization, x_theta, neighbor_theta, self.n_features, self.init_probability)
         toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.attr_float)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-        toolbox.register("mate", tools.cxTwoPoint)
+        toolbox.register("mate", tools.cxSimulatedBinaryBounded, low=0, up=1, eta=20.0)
         toolbox.register("mutate", tools.mutPolynomialBounded, low=0, up=1, eta=20.0, indpb=1.0 / self.n_features)
         toolbox.register("select", tools.selAutomaticEpsilonLexicase)
 

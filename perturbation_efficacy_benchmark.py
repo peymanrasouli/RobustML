@@ -63,13 +63,13 @@ def main():
                                      boundary=False,
                                      n_cf=5,
                                      K_nbrs=100,
-                                     n_population=200,
-                                     n_generation=20,
-                                     crossover_perc=0.8,
-                                     mutation_perc=0.5,
+                                     n_population=100,
+                                     n_generation=10,
+                                     crossover_perc=0.6,
+                                     mutation_perc=0.4,
                                      hof_size=100,
                                      init_x_perc=0.3,
-                                     init_neighbor_perc=0.6,
+                                     init_neighbor_perc=0.7,
                                      init_random_perc=1.0)
             MOCE_nonboundary.fit(X_train, Y_train)
 
@@ -85,9 +85,10 @@ def main():
 
             # building experimental config
             config = {'Dataset': dataset_kw,
-                      'MaxIters': 20000,
-                      'Alpha': 0.1,
-                      'Lambda': 0.0,
+                      'MaxIters': 10000,
+                      'Alpha': 0.001,
+                      'Lambda': 1.0,
+                      'Epsilon': 0.05,
                       'TrainData': X_train_df,
                       'TestData': X_test_df,
                       'FeatureNames': dataset['feature_names'],
@@ -100,7 +101,7 @@ def main():
                       'MOCE': MOCE_nonboundary}
 
             # sub-sampling to evaluate the robustness
-            N = int(0.2 * X_test.shape[0])
+            N = int(0.1 * X_test.shape[0])
             config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
             # generating adversarial examples

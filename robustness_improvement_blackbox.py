@@ -72,13 +72,13 @@ def main():
                                      boundary=False,
                                      n_cf=5,
                                      K_nbrs=100,
-                                     n_population=200,
-                                     n_generation=20,
-                                     crossover_perc=0.8,
-                                     mutation_perc=0.5,
+                                     n_population=100,
+                                     n_generation=10,
+                                     crossover_perc=0.6,
+                                     mutation_perc=0.4,
                                      hof_size=100,
                                      init_x_perc=0.3,
-                                     init_neighbor_perc=0.6,
+                                     init_neighbor_perc=0.7,
                                      init_random_perc=1.0)
             MOCE_nonboundary.fit(X_train, Y_train)
 
@@ -94,9 +94,10 @@ def main():
 
             # building experimental config
             config = {'Dataset': dataset_kw,
-                      'MaxIters': 20000,
-                      'Alpha': 0.1,
-                      'Lambda': 0.0,
+                      'MaxIters': 10000,
+                      'Alpha': 0.001,
+                      'Lambda': 1.0,
+                      'Epsilon': 0.05,
                       'TrainData': X_train_df,
                       'TestData': X_test_df,
                       'FeatureNames': dataset['feature_names'],
@@ -109,7 +110,7 @@ def main():
                       'MOCE': MOCE_nonboundary}
 
             # sub-sampling to evaluate the robustness
-            N = int(0.2 * X_test.shape[0])
+            N = int(0.1 * X_test.shape[0])
             config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
             # generating adversarial examples
@@ -146,13 +147,13 @@ def main():
                                  boundary=True,
                                  n_cf=5,
                                  K_nbrs=100,
-                                 n_population=200,
-                                 n_generation=20,
-                                 crossover_perc=0.8,
-                                 mutation_perc=0.5,
+                                 n_population=100,
+                                 n_generation=10,
+                                 crossover_perc=0.6,
+                                 mutation_perc=0.4,
                                  hof_size=100,
                                  init_x_perc=0.3,
-                                 init_neighbor_perc=0.6,
+                                 init_neighbor_perc=0.7,
                                  init_random_perc=1.0)
             MOCE_boundary.fit(X_train, Y_train)
 
@@ -162,6 +163,7 @@ def main():
             Y_cfs = []
             D_cfs = []
             for i, x, y, p in zip(range(X_correct.shape[0]), X_correct, Y_correct, P_correct):
+
                 if p <= prob_thresh:
 
                     explanations = MOCE_boundary.explain(x)
@@ -196,8 +198,8 @@ def main():
                 X_add = np.vstack(X_add)
                 Y_add = np.hstack(Y_add)
 
-                X_improved = np.r_[X_correct, X_add]
-                Y_improved = np.r_[Y_correct, Y_add]
+                X_improved = np.r_[X_train, X_add]
+                Y_improved = np.r_[Y_train, Y_add]
 
                 improved_blackbox, \
                 improved_train_performance, \
@@ -212,19 +214,19 @@ def main():
 
                 # creating multiobjective counterfactual explainer: MOCE
                 MOCE_nonboundary = MOCE(dataset,
-                                         predict_fn=improved_predict_fn,
-                                         predict_proba_fn=improved_predict_proba_fn,
-                                         boundary=False,
-                                         n_cf=5,
-                                         K_nbrs=100,
-                                         n_population=200,
-                                         n_generation=20,
-                                         crossover_perc=0.8,
-                                         mutation_perc=0.5,
-                                         hof_size=100,
-                                         init_x_perc=0.3,
-                                         init_neighbor_perc=0.6,
-                                         init_random_perc=1.0)
+                                        predict_fn=improved_predict_fn,
+                                        predict_proba_fn=improved_predict_proba_fn,
+                                        boundary=False,
+                                        n_cf=5,
+                                        K_nbrs=100,
+                                        n_population=100,
+                                        n_generation=10,
+                                        crossover_perc=0.6,
+                                        mutation_perc=0.4,
+                                        hof_size=100,
+                                        init_x_perc=0.3,
+                                        init_neighbor_perc=0.7,
+                                        init_random_perc=1.0)
                 MOCE_nonboundary.fit(X_train, Y_train)
 
                 # creating data frames from the train and test data
@@ -239,9 +241,10 @@ def main():
 
                 # building experimental config
                 config = {'Dataset': dataset_kw,
-                          'MaxIters': 20000,
-                          'Alpha': 0.1,
-                          'Lambda': 0.0,
+                          'MaxIters': 10000,
+                          'Alpha': 0.001,
+                          'Lambda': 1.0,
+                          'Epsilon': 0.05,
                           'TrainData': X_train_df,
                           'TestData': X_test_df,
                           'FeatureNames': dataset['feature_names'],
@@ -254,7 +257,7 @@ def main():
                           'MOCE': MOCE_nonboundary}
 
                 # sub-sampling to evaluate the robustness
-                N = int(0.2 * X_test.shape[0])
+                N = int(0.1 * X_test.shape[0])
                 config['TestData'] = config['TestData'].sample(n=N, random_state=42)
 
                 # generating adversarial examples
