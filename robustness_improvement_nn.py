@@ -157,7 +157,7 @@ def main():
 
 
             print('Generating boundary counterfactuals to improve the inter-class margin:')
-            prob_thresh = 0.65
+            prob_thresh = 0.7
             X_cfs = []
             Y_cfs = []
             D_cfs = []
@@ -185,7 +185,7 @@ def main():
             X_cfs = np.asarray(X_cfs)
             Y_cfs = np.asarray(Y_cfs)
 
-            for b in range(1, n_bins):
+            for b in range(0, n_bins):
                 print('\n')
                 print('Robustness of improved black-box using counterfactuals within '
                       'range bin --%d-- with ratio --%.3f--:' % (b,bins[b]))
@@ -227,7 +227,7 @@ def main():
                                         init_x_perc=0.2,
                                         init_neighbor_perc=1.0,
                                         init_random_perc=0.4)
-                MOCE_nonboundary.fit(X_train, Y_train)
+                MOCE_nonboundary.fit(X_improved, Y_improved)
 
                 # creating data frames from the train and test data
                 X_train_df = pd.DataFrame(data=np.c_[X_train, Y_train], columns=dataset['feature_names'] + ['class'])

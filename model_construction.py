@@ -21,15 +21,15 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
             def __init__(self, n_inputs):
                 super(DNN, self).__init__()
                 # input to first hidden layer
-                self.hidden1 = Linear(n_inputs, 100)
+                self.hidden1 = Linear(n_inputs, 500)
                 kaiming_uniform_(self.hidden1.weight, nonlinearity='relu')
                 self.act1 = ReLU()
                 # second hidden layer
-                self.hidden2 = Linear(100, 100)
+                self.hidden2 = Linear(500, 500)
                 kaiming_uniform_(self.hidden2.weight, nonlinearity='relu')
                 self.act2 = ReLU()
                 # third hidden layer and output
-                self.hidden3 = Linear(100, 2)
+                self.hidden3 = Linear(500, 2)
                 xavier_uniform_(self.hidden3.weight)
                 self.act3 = Sigmoid()
 

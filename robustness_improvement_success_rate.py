@@ -99,7 +99,7 @@ def main():
 
             # measuring the success rate w.r.t. different values of epsilon
             epsilon_success_rate_original = {'LowProFool':[], 'DeepFool': []}
-            for epsilon in np.linspace(0.001, 0.15, 20):
+            for epsilon in np.linspace(0.001, 0.1, 20):
                 config['Epsilon'] = epsilon
                 performance = evaluatePerformance(config)
                 for method, results in performance.items():
@@ -139,7 +139,7 @@ def main():
 
 
             print('Generating boundary counterfactuals to improve the inter-class margin:')
-            prob_thresh = 0.65
+            prob_thresh = 0.7
             X_cfs = []
             Y_cfs = []
             D_cfs = []
@@ -167,7 +167,7 @@ def main():
             X_cfs = np.asarray(X_cfs)
             Y_cfs = np.asarray(Y_cfs)
 
-            for b in range(1, n_bins):
+            for b in range(0, n_bins):
                 print('\n')
                 print('Robustness of improved black-box using counterfactuals within '
                       'range bin --%d-- with ratio --%.3f--:' % (b,bins[b]))
@@ -180,8 +180,8 @@ def main():
                 X_add = np.vstack(X_add)
                 Y_add = np.hstack(Y_add)
 
-                X_improved = np.r_[X_correct, X_add]
-                Y_improved = np.r_[Y_correct, Y_add]
+                X_improved = np.r_[X_train, X_add]
+                Y_improved = np.r_[Y_train, Y_add]
 
                 improved_blackbox, \
                 improved_train_performance, \
@@ -234,17 +234,17 @@ def main():
 
                 # measuring the success rate w.r.t. different values of epsilon
                 epsilon_success_rate_improved = {'LowProFool': [], 'DeepFool': []}
-                for epsilon in np.linspace(0.001, 0.15, 20):
+                for epsilon in np.linspace(0.001, 0.1, 20):
                     config['Epsilon'] = epsilon
                     performance = evaluatePerformance(config)
                     for method, results in performance.items():
                         epsilon_success_rate_improved[method].append(results.iloc[0, 1])
 
                 # plot the epsilon success rate
-                plt.plot(np.linspace(0.001, 0.15, 20), epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#DC292E')
-                plt.plot(np.linspace(0.001, 0.15, 20), epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#0703B3')
-                plt.plot(np.linspace(0.001, 0.15, 20), epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#DC292E')
-                plt.plot(np.linspace(0.001, 0.15, 20), epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#0703B3')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#DC292E')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#0703B3')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#DC292E')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#0703B3')
                 plt.xlabel('epsilon')
                 plt.ylabel('success rate')
                 plt.legend(['LowProFool-NN$_{original}$', 'DeepFool-NN$_{original}$','LowProFool-NN$_{improved}$', 'DeepFool-NN$_{improved}$'])

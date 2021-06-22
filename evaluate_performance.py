@@ -15,7 +15,26 @@ def evaluatePerformance(config):
         ind_j = np.where(Y_KNN==j)[0]
         X_j = X_KNN[ind_j,:]
         Y_j = Y_KNN[ind_j]
-        KNN[j] = NearestNeighbors(n_neighbors=50).fit(X_j, Y_j)
+        KNN[j] = NearestNeighbors(n_neighbors=10, metric='minkowski', p=2).fit(X_j, Y_j)
+
+
+    # TrainData = config['TrainData']
+    # predict_fn = config['Predict_fn']
+    # epsilon = config['Epsilon']
+    # X_KNN = TrainData.values[:,:-1]
+    # Y_KNN = TrainData.values[:, -1].astype(int)
+    #
+    # Y_hat = predict_fn(X_KNN)
+    # ind_correct = np.where(Y_KNN == Y_hat)[0]
+    # X_correct = X_KNN[ind_correct]
+    # Y_correct = Y_KNN[ind_correct]
+    #
+    # KNN = [[],[]]
+    # for j in [0,1]:
+    #     ind_j = np.where(Y_correct==j)[0]
+    #     X_j = X_correct[ind_j,:]
+    #     Y_j = Y_correct[ind_j]
+    #     KNN[j] = NearestNeighbors(n_neighbors=10, metric='minkowski', p=2).fit(X_j, Y_j)
 
     performance_all = {}
     for method, results in config['AdvData'].items():
@@ -32,12 +51,10 @@ def evaluatePerformance(config):
         label_success_rate = np.sum(label_valid) / len(label_valid)
 
         perturbations = np.abs(X_orig - X_adv)
-        mean_perturbations = np.mean(perturbations, axis=1)
-        epsilon_valid = (mean_perturbations <= epsilon)
-        epsilon_success_rate = np.sum(epsilon_valid) / len(epsilon_valid)
-
-        perturbations = np.abs(X_orig - X_adv)
         norm_perturbations =  np.linalg.norm(perturbations, axis=1)
+
+        epsilon_valid = (norm_perturbations <= epsilon)
+        epsilon_success_rate = np.sum(epsilon_valid) / len(epsilon_valid)
 
         robustness = 0
         for j in [0,1]:
