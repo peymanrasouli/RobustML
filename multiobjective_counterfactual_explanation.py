@@ -24,7 +24,8 @@ class MOCE():
                  hof_size=100,
                  init_x_perc=0.3,
                  init_neighbor_perc=0.6,
-                 init_random_perc=1.0
+                 init_random_perc=1.0,
+                 division_factor = 10,
                  ):
 
         self.dataset = dataset
@@ -45,6 +46,7 @@ class MOCE():
         self.hof_size = hof_size
         self.init_probability = [init_x_perc, init_neighbor_perc, init_random_perc] / \
                                 np.sum([init_x_perc, init_neighbor_perc, init_random_perc])
+        self.division_factor = division_factor
         self.objectiveFunction = self.constructObjectiveFunction()
 
     def constructObjectiveFunction(self):
@@ -189,7 +191,9 @@ class MOCE():
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
         toolbox.register("mate", tools.cxSimulatedBinaryBounded, low=0, up=1, eta=20.0)
         toolbox.register("mutate", tools.mutPolynomialBounded, low=0, up=1, eta=20.0, indpb=1.0 / self.n_features)
-        toolbox.register("select", tools.selAutomaticEpsilonLexicase)
+        # toolbox.register("select", tools.selAutomaticEpsilonLexicase)
+        ref_points = tools.uniform_reference_points(len(self.objective_weights), self.division_factor)
+        toolbox.register("select", tools.selNSGA3, ref_points=ref_points)
 
         return toolbox
 

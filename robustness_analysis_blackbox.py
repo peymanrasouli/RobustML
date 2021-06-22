@@ -71,11 +71,11 @@ def main():
                                      n_population=100,
                                      n_generation=10,
                                      crossover_perc=0.6,
-                                     mutation_perc=0.4,
+                                     mutation_perc=0.2,
                                      hof_size=100,
-                                     init_x_perc=0.3,
-                                     init_neighbor_perc=0.7,
-                                     init_random_perc=1.0)
+                                     init_x_perc=0.2,
+                                     init_neighbor_perc=1.0,
+                                     init_random_perc=0.4)
             MOCE_nonboundary.fit(X_train, Y_train)
 
             # creating data frames from the train and test data
