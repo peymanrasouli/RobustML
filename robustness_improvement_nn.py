@@ -180,7 +180,8 @@ def main():
 
             # retraining the blackbox using improved data (original train data + generated counterfactuals)
             n_bins = 10
-            bins = np.linspace(min(D_cfs), max(D_cfs), n_bins)
+            # bins = np.linspace(min(D_cfs), max(D_cfs), n_bins)
+            bins = np.quantile(D_cfs, q=np.linspace(0, 1, n_bins))
             X_cfs = np.asarray(X_cfs)
             Y_cfs = np.asarray(Y_cfs)
 
