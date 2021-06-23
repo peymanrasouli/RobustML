@@ -45,8 +45,8 @@ xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
                      np.arange(y_min, y_max, h))
 
 # just plot the dataset first
-cm = plt.cm.RdBu
-cm_bright = ListedColormap(['#FF0000', '#0000FF'])
+cm = plt.cm.PiYG
+cm_bright = ListedColormap(['#900c53', '#2b671e'])
 
 # iterate over classifiers
 i = 1
@@ -64,15 +64,15 @@ for name, clf in zip(names, classifiers):
 
     # Put the result into a color plot
     Z = Z.reshape(xx.shape)
-    ax.contourf(xx, yy, Z, cmap=cm, alpha=.8)
+    ax.contourf(xx, yy, Z, cmap=cm, alpha=.7)
 
     # Plotting training data point in class 0
-    class_0 = ax.scatter(X[np.where(y==0)[0], 0], X[np.where(y==0)[0], 1], c='#FF0000',
-               edgecolors='black', s=25, label='class 0')
+    class_0 = ax.scatter(X[np.where(y==0)[0], 0], X[np.where(y==0)[0], 1], c='#900c53',
+               edgecolors='white', s=20, alpha=.8, label='class 0')
 
     # Plotting training data point in class 1
-    class_1 = ax.scatter(X[np.where(y==1)[0], 0], X[np.where(y==1)[0], 1], c='#0000FF',
-                         edgecolors='black', s=25, label='class 1')
+    class_1 = ax.scatter(X[np.where(y==1)[0], 0], X[np.where(y==1)[0], 1], c='#2b671e',
+                         edgecolors='black', s=20,  alpha=.8, label='class 1')
 
     ax.set_xlim(xx.min(), xx.max())
     ax.set_ylim(yy.min(), yy.max())
