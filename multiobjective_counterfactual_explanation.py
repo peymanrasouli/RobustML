@@ -191,9 +191,9 @@ class MOCE():
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
         toolbox.register("mate", tools.cxSimulatedBinaryBounded, low=0, up=1, eta=20.0)
         toolbox.register("mutate", tools.mutPolynomialBounded, low=0, up=1, eta=20.0, indpb=1.0 / self.n_features)
-        toolbox.register("select", tools.selAutomaticEpsilonLexicase)
-        # ref_points = tools.uniform_reference_points(len(self.objective_weights), self.division_factor)
-        # toolbox.register("select", tools.selNSGA3, ref_points=ref_points)
+        # toolbox.register("select", tools.selAutomaticEpsilonLexicase)
+        ref_points = tools.uniform_reference_points(len(self.objective_weights), self.division_factor)
+        toolbox.register("select", tools.selNSGA3, ref_points=ref_points)
 
         return toolbox
 
