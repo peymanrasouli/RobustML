@@ -302,6 +302,7 @@ class MOCE():
 
         # evaluation of the best counterfactual
         best_cf_eval = cfs_eval.iloc[0]
+        # print(best_cf_eval, '\n')
 
         ## returning the results
         explanations = {'cfs_ord': cfs_ord,
