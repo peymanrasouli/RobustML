@@ -128,7 +128,7 @@ def main():
                                  n_cf=5,
                                  K_nbrs=100,
                                  n_population=100,
-                                 n_generation=100,
+                                 n_generation=50,
                                  crossover_perc=0.6,
                                  mutation_perc=0.4,
                                  hof_size=100,
@@ -152,21 +152,21 @@ def main():
                     X_cfs.append(cf)
                     Y_cfs.append(y)
 
-                    d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0] + 1.0
-                    dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))
-                    d_cf_class = dist[0][0] + 1.0
-                    d_ratio =  d_cf_x /  d_cf_class
-                    D_cfs.append(d_ratio)
+                    # d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0] + 1.0
+                    # dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))
+                    # d_cf_class = dist[0][0] + 1.0
+                    # d_ratio =  d_cf_x /  d_cf_class
+                    # D_cfs.append(d_ratio)
 
-                    # d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
-                    # D_cfs.append(d_cf_x)
+                    d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
+                    D_cfs.append(d_cf_x)
 
                 printProgressBar(i + 1, X_train.shape[0], prefix='Progress:', suffix='Complete', length=50)
 
             # retraining the blackbox using improved data (original train data + generated counterfactuals)
             n_bins = 10
-            # bins = np.linspace(min(D_cfs), max(D_cfs), n_bins)
-            bins = np.quantile(D_cfs, q=np.linspace(0, 1, n_bins))
+            bins = np.linspace(min(D_cfs), max(D_cfs), n_bins)
+            # bins = np.quantile(D_cfs, q=np.linspace(0, 1, n_bins))
             X_cfs = np.asarray(X_cfs)
             Y_cfs = np.asarray(Y_cfs)
 
@@ -191,11 +191,11 @@ def main():
                 improved_test_performance = ModelConstruction(X_improved, X_test, Y_improved, Y_test, blackbox_name,
                                                               blackbox_constructor)
                 if blackbox_name == 'nn':
-                    improved_predict_fn = lambda x: blackbox.predict((Variable(torch.tensor(x).float()))).ravel()
-                    improved_predict_proba_fn = lambda x: blackbox.predict_proba((Variable(torch.tensor(x).float())))
+                    improved_predict_fn = lambda x: improved_blackbox.predict((Variable(torch.tensor(x).float()))).ravel()
+                    improved_predict_proba_fn = lambda x: improved_blackbox.predict_proba((Variable(torch.tensor(x).float())))
                 else:
-                    improved_predict_fn = lambda x: blackbox.predict(x).ravel()
-                    improved_predict_proba_fn = lambda x: blackbox.predict_proba(x)
+                    improved_predict_fn = lambda x: improved_blackbox.predict(x).ravel()
+                    improved_predict_proba_fn = lambda x: improved_blackbox.predict_proba(x)
 
                 # creating data frames from the train and test data
                 X_train_df = pd.DataFrame(data=np.c_[X_train, Y_train], columns=dataset['feature_names'] + ['class'])
@@ -244,10 +244,10 @@ def main():
                         epsilon_success_rate_improved[method].append(results.iloc[0, 1])
 
                 # plot the epsilon success rate
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#DC292E')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#0703B3')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#DC292E')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#0703B3')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#900c53')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#2b671e')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#900c53')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#2b671e')
                 plt.xlabel('epsilon')
                 plt.ylabel('success rate')
                 plt.legend(['LowProFool-NN$_{original}$', 'DeepFool-NN$_{original}$','LowProFool-NN$_{improved}$', 'DeepFool-NN$_{improved}$'])
@@ -256,7 +256,6 @@ def main():
                             '_' + blackbox_name + '_' + 'bin_' + str(b) + '.pdf')
                 plt.show(block=False)
                 plt.close()
-
 
 if __name__ == '__main__':
     main()

@@ -67,7 +67,7 @@ def main():
                                      n_cf=5,
                                      K_nbrs=100,
                                      n_population=100,
-                                     n_generation=100,
+                                     n_generation=50,
                                      crossover_perc=0.6,
                                      mutation_perc=0.4,
                                      hof_size=100,
@@ -146,7 +146,7 @@ def main():
                                  n_cf=5,
                                  K_nbrs=100,
                                  n_population=100,
-                                 n_generation=100,
+                                 n_generation=50,
                                  crossover_perc=0.6,
                                  mutation_perc=0.4,
                                  hof_size=100,
@@ -183,8 +183,8 @@ def main():
 
             # retraining the blackbox using improved data (original train data + generated counterfactuals)
             n_bins = 10
-            # bins = np.linspace(min(D_cfs), max(D_cfs), n_bins)
-            bins = np.quantile(D_cfs, q=np.linspace(0, 1, n_bins))
+            bins = np.linspace(min(D_cfs), max(D_cfs), n_bins)
+            # bins = np.quantile(D_cfs, q=np.linspace(0, 1, n_bins))
             X_cfs = np.asarray(X_cfs)
             Y_cfs = np.asarray(Y_cfs)
 
@@ -209,11 +209,11 @@ def main():
                 improved_test_performance = ModelConstruction(X_improved, X_test, Y_improved, Y_test, blackbox_name,
                                                               blackbox_constructor)
                 if blackbox_name == 'nn':
-                    improved_predict_fn = lambda x: blackbox.predict((Variable(torch.tensor(x).float()))).ravel()
-                    improved_predict_proba_fn = lambda x: blackbox.predict_proba((Variable(torch.tensor(x).float())))
+                    improved_predict_fn = lambda x: improved_blackbox.predict((Variable(torch.tensor(x).float()))).ravel()
+                    improved_predict_proba_fn = lambda x: improved_blackbox.predict_proba((Variable(torch.tensor(x).float())))
                 else:
-                    improved_predict_fn = lambda x: blackbox.predict(x).ravel()
-                    improved_predict_proba_fn = lambda x: blackbox.predict_proba(x)
+                    improved_predict_fn = lambda x: improved_blackbox.predict(x).ravel()
+                    improved_predict_proba_fn = lambda x: improved_blackbox.predict_proba(x)
 
                 # creating multiobjective counterfactual explainer: MOCE
                 MOCE_nonboundary = MOCE(dataset,
@@ -223,7 +223,7 @@ def main():
                                         n_cf=5,
                                         K_nbrs=100,
                                         n_population=100,
-                                        n_generation=100,
+                                        n_generation=50,
                                         crossover_perc=0.6,
                                         mutation_perc=0.4,
                                         hof_size=100,

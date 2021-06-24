@@ -69,7 +69,7 @@ def main():
                                      n_cf=5,
                                      K_nbrs=100,
                                      n_population=100,
-                                     n_generation=100,
+                                     n_generation=50,
                                      crossover_perc=0.6,
                                      mutation_perc=0.4,
                                      hof_size=100,
