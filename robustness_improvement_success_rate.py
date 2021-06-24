@@ -244,10 +244,10 @@ def main():
                         epsilon_success_rate_improved[method].append(results.iloc[0, 1])
 
                 # plot the epsilon success rate
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#900c53')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#2b671e')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#900c53')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#2b671e')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#CB5899')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#7AA861')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#CB5899')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#7AA861')
                 plt.xlabel('epsilon')
                 plt.ylabel('success rate')
                 plt.legend(['LowProFool-NN$_{original}$', 'DeepFool-NN$_{original}$','LowProFool-NN$_{improved}$', 'DeepFool-NN$_{improved}$'])
