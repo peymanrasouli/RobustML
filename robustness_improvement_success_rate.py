@@ -152,14 +152,14 @@ def main():
                     X_cfs.append(cf)
                     Y_cfs.append(y)
 
-                    d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0] + 1.0
-                    dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))
-                    d_cf_class = dist[0][0] + 1.0
-                    d_ratio =  d_cf_x /  d_cf_class
-                    D_cfs.append(d_ratio)
+                    # d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0] + 1.0
+                    # dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))
+                    # d_cf_class = dist[0][0] + 1.0
+                    # d_ratio =  d_cf_x /  d_cf_class
+                    # D_cfs.append(d_ratio)
 
-                    # d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
-                    # D_cfs.append(d_cf_x)
+                    d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
+                    D_cfs.append(d_cf_x)
 
                 printProgressBar(i + 1, X_train.shape[0], prefix='Progress:', suffix='Complete', length=50)
 
@@ -244,10 +244,10 @@ def main():
                         epsilon_success_rate_improved[method].append(results.iloc[0, 1])
 
                 # plot the epsilon success rate
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#CB5899')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#7AA861')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#CB5899')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#7AA861')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#BA8CCC')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#5EBF7B')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#BA8CCC')
+                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#5EBF7B')
                 plt.xlabel('epsilon')
                 plt.ylabel('success rate')
                 plt.legend(['LowProFool-NN$_{original}$', 'DeepFool-NN$_{original}$','LowProFool-NN$_{improved}$', 'DeepFool-NN$_{improved}$'])
