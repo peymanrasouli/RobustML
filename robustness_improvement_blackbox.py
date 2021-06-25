@@ -180,7 +180,6 @@ def main():
                     # d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
                     # D_cfs.append(d_cf_x)
 
-
                 printProgressBar(i + 1, X_train.shape[0], prefix='Progress:', suffix='Complete', length=50)
 
             # retraining the blackbox using improved data (original train data + generated counterfactuals)
