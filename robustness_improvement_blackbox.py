@@ -199,14 +199,14 @@ def main():
                     X_cfs.append(cf)
                     Y_cfs.append(y)
 
-                    # d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0] + 1.0
-                    # dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))
-                    # d_cf_class = dist[0][0] + 1.0
-                    # d_ratio =  d_cf_x /  d_cf_class
-                    # D_cfs.append(d_ratio)
+                    d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0] + 1.0
+                    dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))
+                    d_cf_class = dist[0][0] + 1.0
+                    d_ratio =  d_cf_x /  d_cf_class
+                    D_cfs.append(d_ratio)
 
-                    d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
-                    D_cfs.append(d_cf_x)
+                    # d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
+                    # D_cfs.append(d_cf_x)
 
                 printProgressBar(i + 1, X_train.shape[0], prefix='Progress:', suffix='Complete', length=50)
 
