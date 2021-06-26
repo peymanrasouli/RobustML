@@ -33,6 +33,33 @@ def main():
         'nn': MLPClassifier,
     }
 
+    vulnerable_classes = {
+        'adult':{
+            'nn': 1,
+            # 'gb': 0,
+            # 'svc': 1,
+            # 'rf': 0,
+        },
+        'credit-card_default': {
+            'nn': 0,
+            # 'gb': 0,
+            # 'svc': 0,
+            # 'rf': 0,
+        },
+        'compas': {
+            'nn': 1,
+            # 'gb': 1,
+            # 'svc': 1,
+            # 'rf': 1,
+        },
+        'german-credit': {
+            'nn': 0,
+            # 'gb': 0,
+            # 'svc': 0,
+            # 'rf': 0,
+        }
+    }
+
     for dataset_kw in datsets_list:
         # reading the data set
         dataset_name, prepare_dataset_fn, task = datsets_list[dataset_kw]
@@ -139,27 +166,28 @@ def main():
 
 
             print('Generating boundary counterfactuals to improve the inter-class margin:')
+            vul_class = vulnerable_classes[dataset_kw][blackbox_name]
             prob_thresh = 0.7
             X_cfs = []
             Y_cfs = []
             D_cfs = []
             for i, x, y, p in zip(range(X_correct.shape[0]), X_correct, Y_correct, P_correct):
 
-                if p <= prob_thresh:
+                if p <= prob_thresh and y == vul_class:
 
                     explanations = MOCE_boundary.explain(x)
                     cf = explanations['best_cf_ord'].to_numpy()
-                    X_cfs.append(x)
+                    X_cfs.append(cf)
                     Y_cfs.append(y)
 
-                    d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0] + 1.0
-                    dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))
-                    d_cf_class = dist[0][0] + 1.0
-                    d_ratio =  d_cf_x /  d_cf_class
-                    D_cfs.append(d_ratio)
+                    # d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0] + 1.0
+                    # dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))
+                    # d_cf_class = dist[0][0] + 1.0
+                    # d_ratio =  d_cf_x /  d_cf_class
+                    # D_cfs.append(d_ratio)
 
-                    # d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
-                    # D_cfs.append(d_cf_x)
+                    d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
+                    D_cfs.append(d_cf_x)
 
                 printProgressBar(i + 1, X_train.shape[0], prefix='Progress:', suffix='Complete', length=50)
 
