@@ -35,28 +35,28 @@ def main():
 
     vulnerable_classes = {
         'adult':{
-            'nn': 1,
-            # 'gb': 0,
-            # 'svc': 1,
-            # 'rf': 0,
+            'nn': 0,
+            # 'gb': 1,
+            # 'svc': 0,
+            # 'rf': 1,
         },
         'credit-card_default': {
-            'nn': 0,
-            # 'gb': 0,
-            # 'svc': 0,
-            # 'rf': 0,
-        },
-        'compas': {
             'nn': 1,
             # 'gb': 1,
             # 'svc': 1,
             # 'rf': 1,
         },
-        'german-credit': {
+        'compas': {
             'nn': 0,
             # 'gb': 0,
             # 'svc': 0,
             # 'rf': 0,
+        },
+        'german-credit': {
+            'nn': 1,
+            # 'gb': 1,
+            # 'svc': 1,
+            # 'rf': 1,
         }
     }
 
@@ -177,7 +177,7 @@ def main():
                     explanations = MOCE_boundary.explain(x)
                     cf = explanations['best_cf_ord'].to_numpy()
                     X_cfs.append(cf)
-                    Y_cfs.append(1-y)
+                    Y_cfs.append(y)
 
                     d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0] + 1.0
                     dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))

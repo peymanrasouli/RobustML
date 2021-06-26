@@ -91,15 +91,15 @@ def evaluatePerformance(config):
 
             epsilon_success_rate_j = epsilon_valid[np.where(pred_orig == j)]
 
-            ind_i = np.where(pred_orig == (1-j))[0]
-            D_i = norm_perturbations[ind_i]
-            N_i = len(ind_i)
-            alpha = np.sum(D_i) / N_i
-
             ind_j = np.where(pred_orig == j)[0]
             D_j = norm_perturbations[ind_j]
             N_j = len(ind_j)
-            beta = np.sum(D_j) / N_j
+            alpha = np.sum(D_j) / N_j
+
+            ind_i = np.where(pred_orig == (1-j))[0]
+            D_i = norm_perturbations[ind_i]
+            N_i = len(ind_i)
+            beta = np.sum(D_i) / N_i
 
             robustness_j = alpha / beta
 
