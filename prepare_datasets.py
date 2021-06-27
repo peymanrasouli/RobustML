@@ -13,7 +13,7 @@ def PrepareAdult(dataset_path, dataset_name):
 
     ## Reducing data
     np.random.seed(42)
-    ind = np.random.choice(range(df.shape[0]), size=12000, replace=False)
+    ind = np.random.choice(range(df.shape[0]), size=10000, replace=False)
     df = df.iloc[ind,:]
 
     ## Handling missing values
@@ -159,7 +159,7 @@ def PrepareCreditCardDefault(dataset_path, dataset_name):
 
     ## Reducing data
     np.random.seed(42)
-    ind = np.random.choice(range(df.shape[0]), size=12000, replace=False)
+    ind = np.random.choice(range(df.shape[0]), size=10000, replace=False)
     df = df.iloc[ind,:]
 
     df.rename(columns={ 'default payment next month': 'class'}, inplace=True)
