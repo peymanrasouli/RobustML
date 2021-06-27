@@ -92,65 +92,65 @@ def main():
                 predict_fn = lambda x: blackbox.predict(x).ravel()
                 predict_proba_fn = lambda x: blackbox.predict_proba(x)
 
-            # # creating multiobjective counterfactual explainer: MOCE
-            # MOCE_nonboundary = MOCE(dataset,
-            #                          predict_fn=predict_fn,
-            #                          predict_proba_fn=predict_proba_fn,
-            #                          boundary=False,
-            #                          n_cf=5,
-            #                          K_nbrs=100,
-            #                          n_population=100,
-            #                          n_generation=50,
-            #                          crossover_perc=0.6,
-            #                          mutation_perc=0.4,
-            #                          hof_size=100,
-            #                          init_x_perc=0.2,
-            #                          init_neighbor_perc=1.0,
-            #                          init_random_perc=0.4)
-            # MOCE_nonboundary.fit(X_train, Y_train)
-            #
-            # # creating data frames from the train and test data
-            # X_train_df = pd.DataFrame(data=np.c_[X_train, Y_train], columns=dataset['feature_names'] + ['class'])
-            # X_test_df = pd.DataFrame(data=np.c_[X_test, Y_test], columns=dataset['feature_names'] + ['class'])
-            #
-            # # extracting the data's lower and upper bounds
-            # bounds = [np.min(X_train, axis=0), np.max(X_test, axis=0)]
-            #
-            # # computing the weights to model the expert's knowledge
-            # weights = calculateWeights(X_train_df, 'class')
-            #
-            # # building experimental config
-            # config = {'Dataset': dataset_kw,
-            #           'MaxIters': 10000,
-            #           'Alpha': 0.001,
-            #           'Lambda': 1.0,
-            #           'Epsilon': 0.05,
-            #           'TrainData': X_train_df,
-            #           'TestData': X_test_df,
-            #           'FeatureNames': dataset['feature_names'],
-            #           'Target': dataset['class_name'],
-            #           'Weights': weights,
-            #           'Bounds': bounds,
-            #           'Model':blackbox,
-            #           'Predict_fn': predict_fn,
-            #           'Predict_proba_fn': predict_proba_fn,
-            #           'MOCE': MOCE_nonboundary}
-            #
-            # # sub-sampling to evaluate the robustness
-            # N = int(0.1 * X_test.shape[0])
-            # config['TestData'] = config['TestData'].sample(n=N, random_state=42)
-            #
-            # # generating adversarial examples
-            # print('MOCE is in progress ...')
-            # results_moce = generatePerturbations(config, 'MOCE')
-            # config['AdvData'] = {'MOCE': results_moce}
-            #
-            # print('\n')
-            # performance = evaluatePerformance(config)
-            # for method, results in performance.items():
-            #     print(method)
-            #     print(results)
-            #     print('\n')
+            # creating multiobjective counterfactual explainer: MOCE
+            MOCE_nonboundary = MOCE(dataset,
+                                     predict_fn=predict_fn,
+                                     predict_proba_fn=predict_proba_fn,
+                                     boundary=False,
+                                     n_cf=5,
+                                     K_nbrs=100,
+                                     n_population=100,
+                                     n_generation=50,
+                                     crossover_perc=0.6,
+                                     mutation_perc=0.4,
+                                     hof_size=100,
+                                     init_x_perc=0.2,
+                                     init_neighbor_perc=1.0,
+                                     init_random_perc=0.4)
+            MOCE_nonboundary.fit(X_train, Y_train)
+
+            # creating data frames from the train and test data
+            X_train_df = pd.DataFrame(data=np.c_[X_train, Y_train], columns=dataset['feature_names'] + ['class'])
+            X_test_df = pd.DataFrame(data=np.c_[X_test, Y_test], columns=dataset['feature_names'] + ['class'])
+
+            # extracting the data's lower and upper bounds
+            bounds = [np.min(X_train, axis=0), np.max(X_test, axis=0)]
+
+            # computing the weights to model the expert's knowledge
+            weights = calculateWeights(X_train_df, 'class')
+
+            # building experimental config
+            config = {'Dataset': dataset_kw,
+                      'MaxIters': 10000,
+                      'Alpha': 0.001,
+                      'Lambda': 1.0,
+                      'Epsilon': 0.05,
+                      'TrainData': X_train_df,
+                      'TestData': X_test_df,
+                      'FeatureNames': dataset['feature_names'],
+                      'Target': dataset['class_name'],
+                      'Weights': weights,
+                      'Bounds': bounds,
+                      'Model':blackbox,
+                      'Predict_fn': predict_fn,
+                      'Predict_proba_fn': predict_proba_fn,
+                      'MOCE': MOCE_nonboundary}
+
+            # sub-sampling to evaluate the robustness
+            N = int(0.1 * X_test.shape[0])
+            config['TestData'] = config['TestData'].sample(n=N, random_state=42)
+
+            # generating adversarial examples
+            print('MOCE is in progress ...')
+            results_moce = generatePerturbations(config, 'MOCE')
+            config['AdvData'] = {'MOCE': results_moce}
+
+            print('\n')
+            performance = evaluatePerformance(config)
+            for method, results in performance.items():
+                print(method)
+                print(results)
+                print('\n')
 
             ########################################## Robustness Improvement ########################################
             # making prediction for training data
