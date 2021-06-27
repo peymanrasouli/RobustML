@@ -184,7 +184,7 @@ def main():
 
             print('Generating boundary counterfactuals to improve the inter-class margin:')
             vul_class = vulnerable_classes[dataset_kw][blackbox_name]
-            prob_thresh = 0.7
+            prob_thresh = 0.65
             X_cfs = []
             Y_cfs = []
             D_cfs = []
@@ -202,9 +202,6 @@ def main():
                     d_cf_class = dist[0][0] + 1.0
                     d_ratio =  d_cf_x /  d_cf_class
                     D_cfs.append(d_ratio)
-
-                    # d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
-                    # D_cfs.append(d_cf_x)
 
                 printProgressBar(i + 1, X_train.shape[0], prefix='Progress:', suffix='Complete', length=50)
 

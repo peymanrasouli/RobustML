@@ -33,7 +33,7 @@ def main():
         'nn': MLPClassifier,
         'gb': GradientBoostingClassifier,
         'svc': SVC,
-        'rf': RandomForestClassifier,
+        # 'rf': RandomForestClassifier,
     }
 
     for dataset_kw in datsets_list:
