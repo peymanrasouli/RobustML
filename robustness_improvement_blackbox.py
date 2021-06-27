@@ -203,7 +203,7 @@ def main():
                     dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))
                     # d_cf_class = dist[0][0]
                     d_cf_class= np.mean(dist)
-                    d_ratio =  d_cf_x / d_cf_class
+                    d_ratio = d_cf_x / d_cf_class
                     D_cfs.append(d_ratio)
 
                 printProgressBar(i + 1, X_train.shape[0], prefix='Progress:', suffix='Complete', length=50)
