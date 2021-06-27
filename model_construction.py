@@ -1,5 +1,6 @@
 import torch
 torch.set_num_threads(10)
+torch.manual_seed(0)
 import torch.nn as nn
 from torch.autograd import Variable
 from tensorflow import keras
