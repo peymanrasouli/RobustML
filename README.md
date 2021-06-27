@@ -2,7 +2,7 @@
 
 This repository contains the implementation source code of the following paper:
 
-Analyzing and Improving the Robustness of Black-box Models using Counterfactual Explanations
+Analyzing and Improving the Robustness of Tabular Classifiers using Counterfactual Explanations
 
 # Setup
 1- Clone the repository using HTTP/SSH:
