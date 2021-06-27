@@ -189,13 +189,12 @@ def main():
                 printProgressBar(i + 1, X_train.shape[0], prefix='Progress:', suffix='Complete', length=50)
 
             # retraining the blackbox using improved data (original train data + generated counterfactuals)
-            n_bins = 10
-            # bins = np.linspace(min(D_cfs), max(D_cfs), n_bins)
-            bins = np.quantile(D_cfs, q=np.linspace(0, 1, n_bins))
+            n_bins = 8
+            bins = np.linspace(0, 1, n_bins)
             X_cfs = np.asarray(X_cfs)
             Y_cfs = np.asarray(Y_cfs)
 
-            for b in range(0, n_bins):
+            for b in range(1, n_bins):
                 print('\n')
                 print('Robustness of improved black-box using counterfactuals within '
                       'range bin --%d-- with ratio --%.3f--:' % (b,bins[b]))
