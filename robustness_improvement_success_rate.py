@@ -145,7 +145,7 @@ def main():
 
             KNN_groundtruth = [[], []]
             for c in [0, 1]:
-                KNN_groundtruth[c] = NearestNeighbors(n_neighbors=1, metric='minkowski', p=2).fit(X_class[c])
+                KNN_groundtruth[c] = NearestNeighbors(n_neighbors=5, metric='minkowski', p=2).fit(X_class[c])
 
             # creating multiobjective counterfactual explainer: MOCE
             MOCE_boundary = MOCE(dataset,
@@ -179,9 +179,10 @@ def main():
                     X_cfs.append(cf)
                     Y_cfs.append(y)
 
-                    d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0] + 1.0
+                    d_cf_x = pairwise_distances(x.reshape(1,-1), cf.reshape(1,-1), metric='minkowski', p=2)[0][0]
                     dist, ind = KNN_groundtruth[1-y].kneighbors(cf.reshape(1,-1))
-                    d_cf_class = dist[0][0] + 1.0
+                    # d_cf_class = dist[0][0]
+                    d_cf_class= np.mean(dist)
                     d_ratio =  d_cf_x /  d_cf_class
                     D_cfs.append(d_ratio)
 
