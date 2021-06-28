@@ -134,16 +134,16 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
     acc_train = np.round(accuracy_score(Y_train, pred_train),3)
     print(model_name, '| Train data | Accuracy      =', acc_train)
 
-    precision_train = np.round(precision_score(Y_train, pred_train, average='weighted'),3)
+    precision_train = np.round(precision_score(Y_train, pred_train, average='macro'),3)
     print(model_name, '| Train data | Precision     =', precision_train)
 
-    recall_train = np.round(recall_score(Y_train, pred_train, average='weighted'),3)
+    recall_train = np.round(recall_score(Y_train, pred_train, average='macro'),3)
     print(model_name, '| Train data | Recall        =', recall_train)
 
-    f1_train = np.round(f1_score(Y_train, pred_train, average='weighted'),3)
+    f1_train = np.round(f1_score(Y_train, pred_train, average='macro'),3)
     print(model_name, '| Train data | F1-score      =', f1_train)
 
-    roc_auc_train = np.round(roc_auc_score(Y_train, pred_train, average='weighted'),3)
+    roc_auc_train = np.round(roc_auc_score(Y_train, pred_train, average='macro'),3)
     print(model_name, '| Train data | ROC-AUC score =', roc_auc_train)
 
     train_performance = {'acc': acc_train,
@@ -163,16 +163,16 @@ def ModelConstruction(X_train, X_test, Y_train, Y_test, model_name, constructor)
     acc_test = np.round(accuracy_score(Y_test, pred_test),3)
     print(model_name, '| Test data | Accuracy      =', acc_test)
 
-    precision_test  = np.round(precision_score(Y_test, pred_test, average='weighted'),3)
+    precision_test  = np.round(precision_score(Y_test, pred_test, average='macro'),3)
     print(model_name, '| Test data | Precision     =', precision_test)
 
-    recall_test  = np.round(recall_score(Y_test, pred_test, average='weighted'),3)
+    recall_test  = np.round(recall_score(Y_test, pred_test, average='macro'),3)
     print(model_name, '| Test data | Recall        =', recall_test)
 
-    f1_test  = np.round(f1_score(Y_test, pred_test, average='weighted'),3)
+    f1_test  = np.round(f1_score(Y_test, pred_test, average='macro'),3)
     print(model_name, '| Test data | F1-score      =', f1_test)
 
-    roc_auc_test  = np.round(roc_auc_score(Y_test, pred_test, average='weighted'),3)
+    roc_auc_test  = np.round(roc_auc_score(Y_test, pred_test, average='macro'),3)
     print(model_name, '| Test data | ROC-AUC score =', roc_auc_test)
 
     test_performance = {'acc': acc_test,
