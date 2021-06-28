@@ -190,7 +190,8 @@ def main():
             D_cfs = []
             for i, x, y, p in zip(range(X_correct.shape[0]), X_correct, Y_correct, P_correct):
 
-                if p <= prob_thresh and y == vul_class:
+                # if p <= prob_thresh and y == vul_class:
+                if p <= prob_thresh:
 
                     explanations = MOCE_boundary.explain(x)
                     cf = explanations['best_cf_ord'].to_numpy()
