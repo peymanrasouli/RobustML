@@ -134,7 +134,7 @@ def main():
             # measuring the success rate w.r.t. different values of epsilon
             min_perturbations = range_perturbations[dataset_kw][0]
             max_perturbations = range_perturbations[dataset_kw][1]
-            epsilon_success_rate_original = {'DeepFool': []}
+            epsilon_success_rate_original = {'LowProFool': [], 'DeepFool': []}
             for epsilon in np.linspace(min_perturbations,max_perturbations, 40):
                 config['Epsilon'] = epsilon
                 performance = evaluatePerformance(config)
