@@ -60,6 +60,13 @@ def main():
         }
     }
 
+    range_perturbations = {
+        'adult':[0.001, 0.2],
+        'credit-card_default': [0.2, 0.3],
+        'compas': [0.005, 0.35],
+        'german-credit': [0.1, 0.4]
+        }
+
     for dataset_kw in datsets_list:
         # reading the data set
         dataset_name, prepare_dataset_fn, task = datsets_list[dataset_kw]
@@ -125,8 +132,10 @@ def main():
             config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df}
 
             # measuring the success rate w.r.t. different values of epsilon
-            epsilon_success_rate_original = {'LowProFool':[], 'DeepFool': []}
-            for epsilon in np.linspace(0.001, 0.1, 20):
+            min_perturbations = range_perturbations[dataset_kw][0]
+            max_perturbations = range_perturbations[dataset_kw][1]
+            epsilon_success_rate_original = {'DeepFool': []}
+            for epsilon in np.linspace(min_perturbations,max_perturbations, 40):
                 config['Epsilon'] = epsilon
                 performance = evaluatePerformance(config)
                 for method, results in performance.items():
@@ -262,17 +271,21 @@ def main():
 
                 # measuring the success rate w.r.t. different values of epsilon
                 epsilon_success_rate_improved = {'LowProFool': [], 'DeepFool': []}
-                for epsilon in np.linspace(0.001, 0.1, 20):
+                for epsilon in np.linspace(min_perturbations, max_perturbations, 40):
                     config['Epsilon'] = epsilon
                     performance = evaluatePerformance(config)
                     for method, results in performance.items():
                         epsilon_success_rate_improved[method].append(results.iloc[0, 1])
 
                 # plot the epsilon success rate
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#BA8CCC')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#5EBF7B')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#BA8CCC')
-                plt.plot(np.linspace(0.001, 0.1, 20), epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#5EBF7B')
+                plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
+                         epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#BA8CCC')
+                plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
+                         epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#5EBF7B')
+                plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
+                         epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#BA8CCC')
+                plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
+                         epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#5EBF7B')
                 plt.xlabel('epsilon')
                 plt.ylabel('success rate')
                 plt.legend(['LowProFool-NN$_{original}$', 'DeepFool-NN$_{original}$','LowProFool-NN$_{improved}$', 'DeepFool-NN$_{improved}$'])
