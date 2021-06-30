@@ -63,8 +63,8 @@ def main():
     range_perturbations = {
         'adult':[0.001, 0.2],
         'credit-card_default': [0.05, 0.3],
-        'compas': [0.001, 0.2],
-        'german-credit': [0.2, 0.6]
+        'compas': [0.001, 0.25],
+        'german-credit': [0.2, 0.5]
         }
 
     for dataset_kw in datsets_list:
