@@ -11,11 +11,6 @@ def PrepareAdult(dataset_path, dataset_name):
     ## Reading data from a csv file
     df = pd.read_csv(dataset_path + dataset_name, delimiter=',', na_values=' ?')
 
-    # ## Reducing data
-    # np.random.seed(42)
-    # ind = np.random.choice(range(df.shape[0]), size=10000, replace=False)
-    # df = df.iloc[ind,:]
-
     ## Handling missing values
     df = df.dropna().reset_index(drop=True)
     cat_to_num = {
@@ -156,11 +151,6 @@ def PrepareCreditCardDefault(dataset_path, dataset_name):
 
     ## Reading data from a csv file
     df = pd.read_csv(dataset_path+dataset_name, delimiter=',')
-
-    # ## Reducing data
-    # np.random.seed(42)
-    # ind = np.random.choice(range(df.shape[0]), size=10000, replace=False)
-    # df = df.iloc[ind,:]
 
     df.rename(columns={ 'default payment next month': 'class'}, inplace=True)
 
@@ -474,11 +464,6 @@ def PrepareCOMPAS(dataset_path, dataset_name):
     del df['c_jail_out']
     del df['decile_score']
     del df['score_text']
-
-    # ## Reducing data
-    # np.random.seed(42)
-    # ind = np.random.choice(range(df.shape[0]), size=4000, replace=False)
-    # df = df.iloc[ind,:]
 
     ## Recognizing inputs
     class_name = 'class'
