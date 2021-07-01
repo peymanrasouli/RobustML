@@ -209,7 +209,7 @@ def main():
 
             # retraining the blackbox using improved data (original train data + generated counterfactuals)
             n_bins = 8
-            bins = np.linspace(0, 1, n_bins)
+            bins = np.linspace(min(D_cfs), 1, n_bins)
             X_cfs = np.asarray(X_cfs)
             Y_cfs = np.asarray(Y_cfs)
 
