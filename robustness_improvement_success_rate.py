@@ -24,8 +24,8 @@ def main():
     datsets_list = {
         'adult': ('adult.csv', PrepareAdult, 'classification'),
         'credit-card_default': ('credit-card-default.csv', PrepareCreditCardDefault, 'classification'),
-        'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
-        'german-credit': ('german-credit.csv', PrepareGermanCredit, 'classification'),
+        # 'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
+        # 'german-credit': ('german-credit.csv', PrepareGermanCredit, 'classification'),
     }
 
     # defining the list of black-boxes
@@ -61,10 +61,10 @@ def main():
     }
 
     range_perturbations = {
-        'adult':[0.001, 0.2],
-        'credit-card_default': [0.05, 0.3],
-        'compas': [0.001, 0.25],
-        'german-credit': [0.2, 0.5]
+        'adult':[0.001, 0.1],
+        'credit-card_default': [0.04, 0.12],
+        'compas': [0.001, 0.1],
+        'german-credit': [0.2, 0.4]
         }
 
     for dataset_kw in datsets_list:
@@ -132,6 +132,7 @@ def main():
             config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df}
 
             # measuring the success rate w.r.t. different values of epsilon
+            vul_class = vulnerable_classes[dataset_kw][blackbox_name]
             min_perturbations = range_perturbations[dataset_kw][0]
             max_perturbations = range_perturbations[dataset_kw][1]
             epsilon_success_rate_original = {'LowProFool': [], 'DeepFool': []}
@@ -139,7 +140,7 @@ def main():
                 config['Epsilon'] = epsilon
                 performance = evaluatePerformance(config)
                 for method, results in performance.items():
-                    epsilon_success_rate_original[method].append(results.iloc[0,1])
+                    epsilon_success_rate_original[method].append(results.iloc[int(1+vul_class),1])
 
             ########################################## Robustness Improvement ########################################
             # making prediction for training data
@@ -273,7 +274,7 @@ def main():
                     config['Epsilon'] = epsilon
                     performance = evaluatePerformance(config)
                     for method, results in performance.items():
-                        epsilon_success_rate_improved[method].append(results.iloc[0, 1])
+                        epsilon_success_rate_improved[method].append(results.iloc[int(1+vul_class), 1])
 
                 # plot the epsilon success rate
                 plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
