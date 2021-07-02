@@ -24,8 +24,8 @@ def main():
     datsets_list = {
         'adult': ('adult.csv', PrepareAdult, 'classification'),
         'credit-card_default': ('credit-card-default.csv', PrepareCreditCardDefault, 'classification'),
-        # 'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
-        # 'german-credit': ('german-credit.csv', PrepareGermanCredit, 'classification'),
+        'compas': ('compas-scores-two-years.csv', PrepareCOMPAS, 'classification'),
+        'german-credit': ('german-credit.csv', PrepareGermanCredit, 'classification'),
     }
 
     # defining the list of black-boxes
@@ -277,6 +277,7 @@ def main():
                         epsilon_success_rate_improved[method].append(results.iloc[int(1+vul_class), 1])
 
                 # plot the epsilon success rate
+                plt.figure(figsize=(7, 4))
                 plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
                          epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#BA8CCC')
                 plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
@@ -285,12 +286,12 @@ def main():
                          epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#BA8CCC')
                 plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
                          epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#5EBF7B')
-                plt.xlabel('epsilon')
+                plt.xlabel('epsilon ($\epsilon$)')
                 plt.ylabel('success rate')
                 plt.legend(['LowProFool-NN$_{original}$', 'DeepFool-NN$_{original}$','LowProFool-NN$_{improved}$', 'DeepFool-NN$_{improved}$'])
                 plt.grid()
                 plt.savefig(experiment_path + 'success_rate_' + dataset_kw +
-                            '_' + blackbox_name + '_' + 'bin_' + str(b) + '.pdf')
+                            '_' + blackbox_name + '_' + 'bin_' + str(b) + '.pdf',  bbox_inches='tight')
                 plt.show(block=False)
                 plt.close()
 
