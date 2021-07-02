@@ -203,7 +203,7 @@ def main():
             X_cfs = np.asarray(X_cfs)
             Y_cfs = np.asarray(Y_cfs)
 
-            for b in range(1, n_bins):
+            for b in range(3, n_bins):  ## fix
                 print('\n')
                 print('Robustness of improved black-box using counterfactuals within '
                       'range bin --%d-- with ratio --%.3f--:' % (b,bins[b]))
