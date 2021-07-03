@@ -199,7 +199,7 @@ def main():
 
             # retraining the blackbox using improved data (original train data + generated counterfactuals)
             n_bins = 8
-            bins = np.linspace(min(D_cfs), 1, n_bins)
+            bins = np.linspace(min(D_cfs), 3, n_bins)
             X_cfs = np.asarray(X_cfs)
             Y_cfs = np.asarray(Y_cfs)
 
@@ -279,13 +279,13 @@ def main():
                 # plot the epsilon success rate
                 plt.figure(figsize=(7, 4))
                 plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
-                         epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#BA8CCC')
+                         epsilon_success_rate_original['LowProFool'], linestyle='dashed', linewidth=1, color='#FF0000')
                 plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
-                         epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#5EBF7B')
+                         epsilon_success_rate_original['DeepFool'],  linestyle='dashed', linewidth=1, color='#0000FF')
                 plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
-                         epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#BA8CCC')
+                         epsilon_success_rate_improved['LowProFool'], linewidth=1, color='#FF0000')
                 plt.plot(np.linspace(min_perturbations, max_perturbations, 40),
-                         epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#5EBF7B')
+                         epsilon_success_rate_improved['DeepFool'], linewidth=1, color='#0000FF')
                 plt.xlabel('epsilon ($\epsilon$)')
                 plt.ylabel('success rate')
                 plt.legend(['LowProFool-NN$_{original}$', 'DeepFool-NN$_{original}$','LowProFool-NN$_{improved}$', 'DeepFool-NN$_{improved}$'])
