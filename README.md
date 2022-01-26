@@ -2,7 +2,7 @@
 
 This repository contains the implementation source code of the following paper:
 
-[Analyzing and Improving the Robustness of Tabular Classifiers using Counterfactual Explanations](https://ieeexplore.ieee.org/document/9533944)
+[Analyzing and Improving the Robustness of Tabular Classifiers using Counterfactual Explanations](https://ieeexplore.ieee.org/document/9679972)
 
 Bibtex:
 
