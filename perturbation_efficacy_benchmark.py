@@ -46,6 +46,7 @@ def main():
             print('\n')
 
             # creating the black-box model
+            print('Accuracy of the NN model:')
             blackbox, \
             train_performance, \
             test_performance = ModelConstruction( X_train, X_test, Y_train, Y_test, blackbox_name, blackbox_constructor)
@@ -56,6 +57,7 @@ def main():
                 predict_fn = lambda x: blackbox.predict(x).ravel()
                 predict_proba_fn = lambda x: blackbox.predict_proba(x)
 
+            print('Analyzing the perturbation efficacy of baseline methods on the NN model:')
             # creating multiobjective counterfactual explainer: MOCE
             MOCE_nonboundary = MOCE(dataset,
                                      predict_fn=predict_fn,

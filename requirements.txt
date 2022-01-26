@@ -50,3 +50,4 @@ typing-extensions==3.7.4.3
 urllib3==1.26.5
 Werkzeug==2.0.1
 wrapt==1.12.1
+console-progressbar==1.1.2

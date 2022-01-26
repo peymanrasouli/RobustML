@@ -13,7 +13,7 @@ from generate_perturbations import *
 from evaluate_performance import evaluatePerformance
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import pairwise_distances
-from progress_bar import printProgressBar
+
 def main():
     # defining path of data sets and experiment results
     path = './'
@@ -82,7 +82,7 @@ def main():
             print('\n')
 
             # creating the black-box model
-            print('Performance of original black-box:')
+            print('Accuracy of the original NN model:')
             blackbox, \
             train_performance, \
             test_performance = ModelConstruction( X_train, X_test, Y_train, Y_test, blackbox_name, blackbox_constructor)
@@ -93,6 +93,7 @@ def main():
                 predict_fn = lambda x: blackbox.predict(x).ravel()
                 predict_proba_fn = lambda x: blackbox.predict_proba(x)
 
+            print('Analyzing the success rate of baselines on the original NN model:')
             # creating data frames from the train and test data
             X_train_df = pd.DataFrame(data=np.c_[X_train, Y_train], columns=dataset['feature_names'] + ['class'])
             X_test_df = pd.DataFrame(data=np.c_[X_test, Y_test], columns=dataset['feature_names'] + ['class'])
@@ -130,6 +131,7 @@ def main():
             print('DeepFool is in progress ...')
             results_df = generatePerturbations(config, 'DeepFool')
             config['AdvData'] = {'LowProFool': results_lpf, 'DeepFool': results_df}
+            print('\n')
 
             # measuring the success rate w.r.t. different values of epsilon
             vul_class = vulnerable_classes[dataset_kw][blackbox_name]
@@ -174,7 +176,9 @@ def main():
                                  init_random_perc=0.4)
             MOCE_boundary.fit(X_train, Y_train)
 
-            print('Generating boundary counterfactuals to improve the inter-class margin:')
+            print('Generating boundary counterfactuals to improve the inter-class margin of the NN model:')
+            pb = ProgressBar(total=X_correct.shape[0], prefix='Progress:', suffix='Complete',
+                             decimals=1, length=50, fill='█', zfill='-')
             vul_class = vulnerable_classes[dataset_kw][blackbox_name]
             prob_thresh = 0.65
             X_cfs = []
@@ -195,7 +199,7 @@ def main():
                     d_ratio = d_cf_x / d_cf_class
                     D_cfs.append(d_ratio)
 
-                printProgressBar(i + 1, X_train.shape[0], prefix='Progress:', suffix='Complete', length=50)
+                pb.print_progress_bar(i + 1)
 
             # retraining the blackbox using improved data (original train data + generated counterfactuals)
             n_bins = 8
@@ -205,8 +209,8 @@ def main():
 
             for b in range(1, n_bins):
                 print('\n')
-                print('Robustness of improved black-box using counterfactuals within '
-                      'range bin --%d-- with ratio --%.3f--:' % (b,bins[b]))
+                print('Analyzing the improved NN model retrained via counterfactuals within '
+                      'range bin --%d-- having distance ratio <= --%.3f--:' % (b,bins[b]))
                 print('\n')
 
                 selected_cfs = np.where(D_cfs <= bins[b])[0]
@@ -219,6 +223,7 @@ def main():
                 X_improved = np.r_[X_train, X_add]
                 Y_improved = np.r_[Y_train, Y_add]
 
+                print('Accuracy of the improved NN model:')
                 improved_blackbox, \
                 improved_train_performance, \
                 improved_test_performance = ModelConstruction(X_improved, X_test, Y_improved, Y_test, blackbox_name,
@@ -230,6 +235,7 @@ def main():
                     improved_predict_fn = lambda x: improved_blackbox.predict(x).ravel()
                     improved_predict_proba_fn = lambda x: improved_blackbox.predict_proba(x)
 
+                print('Analyzing the success rate of baselines on the improved NN model:')
                 # creating data frames from the train and test data
                 X_train_df = pd.DataFrame(data=np.c_[X_train, Y_train], columns=dataset['feature_names'] + ['class'])
                 X_test_df = pd.DataFrame(data=np.c_[X_test, Y_test], columns=dataset['feature_names'] + ['class'])

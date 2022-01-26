@@ -4,6 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import torch
 from LowProFool.Adverse import lowProFool, deepfool
+from console_progressbar.progressbar import ProgressBar
 
 def calculateWeights(df, target, show_heatmap=False):
     def heatmap(cor):
@@ -36,6 +37,9 @@ def generatePerturbations(config, method):
                'X_adv': [],
                'Time': []}
 
+    pb = ProgressBar(total=len(df_test), prefix='Progress:', suffix='Complete',
+                     decimals=1, length=50, fill='█', zfill='-')
+    i = 0
     for _, x in df_test.iterrows():
 
         x_orig = x[feature_names].to_numpy().reshape(1, -1).ravel()
@@ -63,6 +67,9 @@ def generatePerturbations(config, method):
         results['X_orig'].append(x_orig)
         results['X_adv'].append(x_adv)
         results['Time'].append(spent_time)
+
+        i += 1
+        pb.print_progress_bar(i)
 
     return results
 
