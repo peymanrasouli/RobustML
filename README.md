@@ -2,7 +2,19 @@
 
 This repository contains the implementation source code of the following paper:
 
-Analyzing and Improving the Robustness of Tabular Classifiers using Counterfactual Explanations
+[Analyzing and Improving the Robustness of Tabular Classifiers using Counterfactual Explanations](https://ieeexplore.ieee.org/document/9533944)
+
+Bibtex:
+
+    @inproceedings{rasouli2021robustness,
+                   title={Analyzing and Improving the Robustness of Tabular Classifiers using Counterfactual Explanations},
+                   author={Rasouli, Peyman and Yu, Ingrid Chieh},
+                   booktitle={2021 20th IEEE International Conference on Machine Learning and Applications (ICMLA)},
+                   pages={1286-1293},
+                   year={2021},
+                   organization={IEEE},
+                   doi={10.1109/ICMLA52953.2021.00209}
+    }
 
 # Setup
 1- Clone the repository using HTTP/SSH:
